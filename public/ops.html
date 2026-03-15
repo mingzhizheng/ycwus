@@ -28,35 +28,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 .main { margin-left: 200px; margin-top: 56px; padding: 24px; }
 
-/* Dashboard */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-.stat-card {
-  background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
+.stat-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
 .stat-card .value { font-size: 28px; font-weight: 700; color: #333; }
 
-/* Tables */
 .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
 .card-header h2 { font-size: 16px; color: #333; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
 td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
 tr:hover td { background: #f8f9ff; }
 
-/* Buttons */
 .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .2s; }
 .btn-primary { background: #667eea; color: #fff; }
 .btn-success { background: #27ae60; color: #fff; }
 .btn-danger { background: #e74c3c; color: #fff; }
+.btn-warning { background: #f39c12; color: #fff; }
 .btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn:hover { opacity: 0.85; }
 
-/* Status badges */
-.badge {
-  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
-}
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .badge-received { background: #e3f2fd; color: #1976d2; }
 .badge-unclaimed { background: #fff3e0; color: #e65100; }
 .badge-pending { background: #fce4ec; color: #c62828; }
@@ -66,62 +60,67 @@ tr:hover td { background: #f8f9ff; }
 .badge-done { background: #e8f5e9; color: #1b5e20; }
 .badge-dispose { background: #efebe9; color: #4e342e; }
 
-/* Wizard */
-.wizard-overlay {
+.wizard-overlay, .modal-overlay {
   display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
 }
-.wizard-overlay.show { display: flex; }
-.wizard-box {
-  background: #fff; border-radius: 16px; padding: 32px; width: 560px; max-height: 90vh; overflow-y: auto;
-}
+.wizard-overlay.show, .modal-overlay.show { display: flex; }
+.wizard-box { background: #fff; border-radius: 16px; padding: 32px; width: 560px; max-height: 90vh; overflow-y: auto; }
 .wizard-box h2 { margin-bottom: 24px; font-size: 18px; }
 .wizard-steps { display: flex; gap: 8px; margin-bottom: 24px; }
-.wizard-steps .step {
-  flex: 1; text-align: center; padding: 8px; border-radius: 6px;
-  background: #f0f0f0; color: #888; font-size: 12px; font-weight: 500;
-}
+.wizard-steps .step { flex: 1; text-align: center; padding: 8px; border-radius: 6px; background: #f0f0f0; color: #888; font-size: 12px; font-weight: 500; }
 .wizard-steps .step.active { background: #667eea; color: #fff; }
 .wizard-steps .step.done { background: #27ae60; color: #fff; }
 
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #555; }
-.form-group input, .form-group select, .form-group textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
-}
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
 
 .photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .photo-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; }
 
 .condition-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.condition-option {
-  padding: 12px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; text-align: center;
-  transition: all .2s; font-size: 13px;
-}
+.condition-option { padding: 12px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; text-align: center; transition: all .2s; font-size: 13px; }
 .condition-option:hover { border-color: #667eea; }
 .condition-option.selected { border-color: #667eea; background: #f0f3ff; }
 
 .wizard-actions { display: flex; justify-content: space-between; margin-top: 24px; }
 
-/* Search */
-.search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-.search-bar input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
-.search-bar select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+.search-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-bar input, .search-bar select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+.search-bar input { flex: 1; min-width: 150px; }
 
-/* User modal */
-.modal-overlay {
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
-}
-.modal-overlay.show { display: flex; }
-.modal-box { background: #fff; border-radius: 16px; padding: 32px; width: 480px; }
+.modal-box { background: #fff; border-radius: 16px; padding: 32px; width: 480px; max-height: 90vh; overflow-y: auto; }
 .modal-box h2 { margin-bottom: 20px; font-size: 18px; }
 
 .page { display: none; }
 .page.active { display: block; }
-
 .hidden { display: none; }
+
+/* Batch toolbar */
+.batch-bar { display: none; background: #667eea; color: #fff; padding: 10px 16px; border-radius: 8px; margin-bottom: 12px; align-items: center; justify-content: space-between; }
+.batch-bar.show { display: flex; }
+.batch-bar .batch-count { font-weight: 600; }
+.batch-bar .batch-actions { display: flex; gap: 8px; }
+.batch-bar .btn { border: 1px solid rgba(255,255,255,0.3); }
+
+/* Charts placeholder */
+.chart-container { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+@media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
+.bar-chart { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.bar-label { width: 80px; text-align: right; color: #666; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-fill { height: 20px; border-radius: 4px; background: #667eea; min-width: 2px; transition: width .3s; }
+.bar-value { font-size: 12px; color: #888; flex-shrink: 0; }
+
+.date-filter { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.date-filter input, .date-filter select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+
+/* OCR */
+.ocr-result { background: #f8f9fa; border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 13px; }
+.ocr-result .found { color: #27ae60; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -138,11 +137,13 @@ tr:hover td { background: #f8f9ff; }
   <a href="#" data-page="dashboard" class="active">仪表盘</a>
   <a href="#" data-page="returns">入库管理</a>
   <a href="#" data-page="repair">维修管理</a>
+  <a href="#" data-page="reports">数据报表</a>
+  <a href="#" id="navWarehouses" data-page="warehouses" class="hidden">仓库管理</a>
   <a href="#" id="navUsers" data-page="users" class="hidden">用户管理</a>
 </div>
 
 <div class="main">
-  <!-- Dashboard Page -->
+  <!-- Dashboard -->
   <div class="page active" id="page-dashboard">
     <div class="stats-grid">
       <div class="stat-card"><div class="label">今日入库</div><div class="value" id="statToday">0</div></div>
@@ -153,21 +154,25 @@ tr:hover td { background: #f8f9ff; }
     <div class="card">
       <div class="card-header">
         <h2>最近入库</h2>
-        <button class="btn btn-primary" onclick="openWizard()">+ 收货入库</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="openOcrModal()">OCR识别</button>
+          <button class="btn btn-primary" onclick="openWizard()">+ 收货入库</button>
+        </div>
       </div>
       <table>
-        <thead><tr><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>状态</th><th>入库时间</th></tr></thead>
+        <thead><tr><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>仓库</th><th>匹配</th><th>状态</th><th>入库时间</th></tr></thead>
         <tbody id="recentReturns"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Returns Page -->
+  <!-- Returns -->
   <div class="page" id="page-returns">
     <div class="card">
       <div class="card-header">
         <h2>退货列表</h2>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="openBatchPalletModal()">托盘批处理</button>
           <button class="btn btn-primary" onclick="openWizard()">+ 收货入库</button>
           <button class="btn btn-outline" onclick="exportExcel()">导出 Excel</button>
         </div>
@@ -178,23 +183,33 @@ tr:hover td { background: #f8f9ff; }
           <option value="">全部状态</option>
           <option value="received">已收货</option>
           <option value="unclaimed">无主货</option>
-          <option value="pending">待决策</option>
           <option value="resend">重发</option>
           <option value="refurbish">翻新</option>
           <option value="in_repair">维修中</option>
           <option value="done">已完成</option>
           <option value="dispose">已销毁</option>
         </select>
+        <select id="filterWarehouse" onchange="loadReturns()">
+          <option value="">全部仓库</option>
+        </select>
         <button class="btn btn-primary" onclick="loadReturns()">搜索</button>
       </div>
+      <div class="batch-bar" id="batchBar">
+        <span>已选择 <span class="batch-count" id="batchCount">0</span> 项</span>
+        <div class="batch-actions">
+          <button class="btn btn-success btn-sm" onclick="batchDecision('resend')">批量重发</button>
+          <button class="btn btn-warning btn-sm" onclick="batchDecision('refurbish')">批量翻新</button>
+          <button class="btn btn-danger btn-sm" onclick="batchDecision('dispose')">批量销毁</button>
+        </div>
+      </div>
       <table>
-        <thead><tr><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>外观</th><th>托盘号</th><th>货主</th><th>状态</th><th>入库时间</th></tr></thead>
+        <thead><tr><th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>外观</th><th>托盘号</th><th>仓库</th><th>货主</th><th>状态</th><th>入库时间</th></tr></thead>
         <tbody id="returnsList"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Repair Page -->
+  <!-- Repair -->
   <div class="page" id="page-repair">
     <div class="card">
       <div class="card-header"><h2>维修工单</h2></div>
@@ -205,7 +220,46 @@ tr:hover td { background: #f8f9ff; }
     </div>
   </div>
 
-  <!-- Users Page -->
+  <!-- Reports -->
+  <div class="page" id="page-reports">
+    <div class="date-filter">
+      <label style="font-size:13px;color:#555">日期范围：</label>
+      <input type="date" id="reportStart">
+      <span style="color:#888">至</span>
+      <input type="date" id="reportEnd">
+      <select id="reportWarehouse"><option value="">全部仓库</option></select>
+      <button class="btn btn-primary" onclick="loadAnalytics()">查询</button>
+    </div>
+    <div class="stats-grid" id="reportSummary"></div>
+    <div class="chart-row">
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">每日入库趋势</h3><div id="chartDaily" class="bar-chart"></div></div>
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">状态分布</h3><div id="chartStatus" class="bar-chart"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">外观损坏分布</h3><div id="chartCondition" class="bar-chart"></div></div>
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">快递公司分布</h3><div id="chartCarrier" class="bar-chart"></div></div>
+    </div>
+    <div class="chart-row">
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">退货量 Top SKU</h3><div id="chartTopSku" class="bar-chart"></div></div>
+      <div class="card"><h3 style="font-size:15px;margin-bottom:12px">各仓库退货量</h3><div id="chartWarehouse" class="bar-chart"></div></div>
+    </div>
+  </div>
+
+  <!-- Warehouses -->
+  <div class="page" id="page-warehouses">
+    <div class="card">
+      <div class="card-header">
+        <h2>仓库管理</h2>
+        <button class="btn btn-primary" onclick="openWarehouseModal()">+ 新增仓库</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>编码</th><th>名称</th><th>地址</th><th>城市</th><th>国家</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="warehousesList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users -->
   <div class="page" id="page-users">
     <div class="card">
       <div class="card-header">
@@ -213,7 +267,7 @@ tr:hover td { background: #f8f9ff; }
         <button class="btn btn-primary" onclick="openUserModal()">+ 新增用户</button>
       </div>
       <table>
-        <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>显示名</th><th>货主编码</th><th>状态</th><th>操作</th></tr></thead>
+        <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>显示名</th><th>货主编码</th><th>邮箱</th><th>仓库</th><th>状态</th><th>操作</th></tr></thead>
         <tbody id="usersList"></tbody>
       </table>
     </div>
@@ -230,37 +284,17 @@ tr:hover td { background: #f8f9ff; }
       <div class="step" id="ws3">3. 外观评级</div>
       <div class="step" id="ws4">4. 确认</div>
     </div>
-
-    <!-- Step 1 -->
     <div id="wizStep1">
-      <div class="form-group">
-        <label>快递单号 *</label>
-        <input type="text" id="wizTracking" placeholder="输入或扫描快递单号" autofocus>
-      </div>
-      <div class="form-group">
-        <label>快递公司</label>
-        <input type="text" id="wizCarrier" placeholder="自动识别" readonly>
-      </div>
-      <div class="form-group">
-        <label>SKU</label>
-        <input type="text" id="wizSku" placeholder="输入SKU编码">
-      </div>
-      <div class="form-group">
-        <label>托盘号</label>
-        <input type="text" id="wizPallet" placeholder="输入托盘号">
-      </div>
+      <div class="form-group"><label>快递单号 *</label><input type="text" id="wizTracking" placeholder="输入或扫描快递单号" autofocus></div>
+      <div class="form-group"><label>快递公司</label><input type="text" id="wizCarrier" placeholder="自动识别" readonly></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="wizSku" placeholder="输入SKU编码"></div>
+      <div class="form-group"><label>托盘号</label><input type="text" id="wizPallet" placeholder="输入托盘号"></div>
+      <div class="form-group"><label>所属仓库</label><select id="wizWarehouse"></select></div>
+      <div id="wizMatchInfo" style="display:none;padding:8px 12px;background:#e8f5e9;border-radius:6px;font-size:13px;color:#2e7d32;margin-top:-8px"></div>
     </div>
-
-    <!-- Step 2 -->
     <div id="wizStep2" style="display:none">
-      <div class="form-group">
-        <label>拍照上传</label>
-        <input type="file" id="wizPhotos" accept="image/*" capture="environment" multiple>
-        <div class="photo-preview" id="photoPreview"></div>
-      </div>
+      <div class="form-group"><label>拍照上传</label><input type="file" id="wizPhotos" accept="image/*" capture="environment" multiple><div class="photo-preview" id="photoPreview"></div></div>
     </div>
-
-    <!-- Step 3 -->
     <div id="wizStep3" style="display:none">
       <div class="form-group">
         <label>外观状态评级</label>
@@ -271,18 +305,12 @@ tr:hover td { background: #f8f9ff; }
           <div class="condition-option" data-value="丢失配件" onclick="selectCondition(this)">丢失配件</div>
         </div>
       </div>
-      <div class="form-group">
-        <label>备注</label>
-        <textarea id="wizNotes" rows="3" placeholder="补充说明..."></textarea>
-      </div>
+      <div class="form-group"><label>备注</label><textarea id="wizNotes" rows="3" placeholder="补充说明..."></textarea></div>
     </div>
-
-    <!-- Step 4 -->
     <div id="wizStep4" style="display:none">
       <h3 style="margin-bottom:16px">确认入库信息</h3>
       <div id="wizSummary" style="font-size:14px;line-height:1.8"></div>
     </div>
-
     <div class="wizard-actions">
       <button class="btn btn-outline" id="wizBtnBack" onclick="wizardBack()" style="visibility:hidden">上一步</button>
       <button class="btn btn-outline" onclick="closeWizard()">取消</button>
@@ -296,31 +324,15 @@ tr:hover td { background: #f8f9ff; }
   <div class="modal-box">
     <h2 id="userModalTitle">新增用户</h2>
     <input type="hidden" id="editUserId">
-    <div class="form-group">
-      <label>用户名</label>
-      <input type="text" id="uUsername" placeholder="用户名">
+    <div class="form-group"><label>用户名</label><input type="text" id="uUsername" placeholder="用户名"></div>
+    <div class="form-group"><label>密码</label><input type="password" id="uPassword" placeholder="密码"></div>
+    <div class="form-group"><label>显示名</label><input type="text" id="uDisplayName" placeholder="显示名称"></div>
+    <div class="form-group"><label>邮箱</label><input type="email" id="uEmail" placeholder="邮箱（用于接收通知）"></div>
+    <div class="form-group"><label>角色</label>
+      <select id="uRole"><option value="staff">仓库员工</option><option value="admin">管理员</option><option value="customer">货主</option><option value="repair">维修人员</option></select>
     </div>
-    <div class="form-group">
-      <label>密码</label>
-      <input type="password" id="uPassword" placeholder="密码">
-    </div>
-    <div class="form-group">
-      <label>显示名</label>
-      <input type="text" id="uDisplayName" placeholder="显示名称">
-    </div>
-    <div class="form-group">
-      <label>角色</label>
-      <select id="uRole">
-        <option value="staff">仓库员工 (staff)</option>
-        <option value="admin">管理员 (admin)</option>
-        <option value="customer">货主 (customer)</option>
-        <option value="repair">维修人员 (repair)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>货主编码 (仅货主角色)</label>
-      <input type="text" id="uCustomerCode" placeholder="货主编码">
-    </div>
+    <div class="form-group"><label>货主编码</label><input type="text" id="uCustomerCode" placeholder="货主编码"></div>
+    <div class="form-group"><label>所属仓库</label><select id="uWarehouse"><option value="">无</option></select></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-outline" onclick="closeUserModal()">取消</button>
       <button class="btn btn-primary" onclick="saveUser()">保存</button>
@@ -328,30 +340,65 @@ tr:hover td { background: #f8f9ff; }
   </div>
 </div>
 
-<!-- Repair Update Modal -->
+<!-- Repair Modal -->
 <div class="modal-overlay" id="repairModal">
   <div class="modal-box">
     <h2>更新维修进度</h2>
     <input type="hidden" id="repairId">
-    <div class="form-group">
-      <label>状态</label>
-      <select id="repairStatus">
-        <option value="pending">待处理</option>
-        <option value="in_progress">维修中</option>
-        <option value="done">已完成</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>诊断结果</label>
-      <textarea id="repairDiagnosis" rows="3" placeholder="诊断结果..."></textarea>
-    </div>
-    <div class="form-group">
-      <label>完成进度 (%)</label>
-      <input type="number" id="repairPct" min="0" max="100" value="0">
-    </div>
+    <div class="form-group"><label>状态</label><select id="repairStatus"><option value="pending">待处理</option><option value="in_progress">维修中</option><option value="done">已完成</option></select></div>
+    <div class="form-group"><label>诊断结果</label><textarea id="repairDiagnosis" rows="3" placeholder="诊断结果..."></textarea></div>
+    <div class="form-group"><label>完成进度 (%)</label><input type="number" id="repairPct" min="0" max="100" value="0"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-outline" onclick="closeRepairModal()">取消</button>
       <button class="btn btn-primary" onclick="saveRepair()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Warehouse Modal -->
+<div class="modal-overlay" id="warehouseModal">
+  <div class="modal-box">
+    <h2 id="whModalTitle">新增仓库</h2>
+    <input type="hidden" id="editWhId">
+    <div class="form-group"><label>仓库编码 *</label><input type="text" id="whCode" placeholder="如 WH-US01"></div>
+    <div class="form-group"><label>仓库名称 *</label><input type="text" id="whName" placeholder="仓库名称"></div>
+    <div class="form-group"><label>地址</label><input type="text" id="whAddress" placeholder="详细地址"></div>
+    <div class="form-group"><label>城市</label><input type="text" id="whCity" placeholder="城市"></div>
+    <div class="form-group"><label>国家</label><input type="text" id="whCountry" placeholder="国家代码" value="US"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeWarehouseModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveWarehouse()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Batch Pallet Modal -->
+<div class="modal-overlay" id="batchPalletModal">
+  <div class="modal-box">
+    <h2>托盘批量处理</h2>
+    <div class="form-group"><label>托盘号 *</label><input type="text" id="bpPallet" placeholder="输入托盘号"></div>
+    <div class="form-group"><label>批量操作</label>
+      <select id="bpDecision"><option value="">仅查询</option><option value="resend">全部重发</option><option value="refurbish">全部翻新</option><option value="dispose">全部销毁</option></select>
+    </div>
+    <div class="form-group"><label>备注</label><textarea id="bpNotes" rows="2" placeholder="备注..."></textarea></div>
+    <div id="bpResult" style="margin-top:8px;font-size:13px"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeBatchPalletModal()">取消</button>
+      <button class="btn btn-primary" onclick="executeBatchPallet()">执行</button>
+    </div>
+  </div>
+</div>
+
+<!-- OCR Modal -->
+<div class="modal-overlay" id="ocrModal">
+  <div class="modal-box">
+    <h2>照片OCR识别快递单号</h2>
+    <div class="form-group"><label>上传快递面单照片</label><input type="file" id="ocrImage" accept="image/*" capture="environment"></div>
+    <div id="ocrStatus" style="font-size:13px;color:#888;margin:8px 0"></div>
+    <div id="ocrResult" class="ocr-result" style="display:none"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeOcrModal()">关闭</button>
+      <button class="btn btn-primary" onclick="runOcr()">开始识别</button>
     </div>
   </div>
 </div>
@@ -360,25 +407,26 @@ tr:hover td { background: #f8f9ff; }
 const API = window.location.origin;
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-if (!token) { window.location.href = '/login.html'; }
-if (user.role === 'customer') { window.location.href = '/portal.html'; }
+if (!token) window.location.href = '/login.html';
+if (user.role === 'customer') window.location.href = '/portal.html';
 
 document.getElementById('userDisplay').textContent = user.display_name || user.username;
-if (user.role === 'admin') document.getElementById('navUsers').classList.remove('hidden');
-
-// Headers helper
-function headers(extra = {}) {
-  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...extra };
+if (user.role === 'admin') {
+  document.getElementById('navUsers').classList.remove('hidden');
+  document.getElementById('navWarehouses').classList.remove('hidden');
 }
 
+let warehouseList = [];
+let selectedIds = new Set();
+
+function headers(extra = {}) { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...extra }; }
 async function apiFetch(url, opts = {}) {
   const res = await fetch(API + url, { headers: headers(), ...opts });
   if (res.status === 401) { localStorage.clear(); window.location.href = '/login.html'; }
   return res;
 }
 
-// Navigation
+// Nav
 document.querySelectorAll('.sidebar a').forEach(a => {
   a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -386,76 +434,99 @@ document.querySelectorAll('.sidebar a').forEach(a => {
     a.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + a.dataset.page).classList.add('active');
-    if (a.dataset.page === 'dashboard') loadDashboard();
-    if (a.dataset.page === 'returns') loadReturns();
-    if (a.dataset.page === 'repair') loadRepairOrders();
-    if (a.dataset.page === 'users') loadUsers();
+    const loaders = { dashboard: loadDashboard, returns: loadReturns, repair: loadRepairOrders, users: loadUsers, warehouses: loadWarehouses, reports: loadAnalytics };
+    if (loaders[a.dataset.page]) loaders[a.dataset.page]();
   });
 });
 
 function logout() { localStorage.clear(); window.location.href = '/login.html'; }
-
-// Status badge helper
 function statusBadge(s) {
   const labels = { received: '已收货', unclaimed: '无主货', pending: '待决策', resend: '重发', refurbish: '翻新', in_repair: '维修中', done: '已完成', dispose: '已销毁' };
-  return `<span class="badge badge-${s}">${labels[s] || s}</span>`;
+  return '<span class="badge badge-' + s + '">' + (labels[s] || s) + '</span>';
+}
+const matchLabels = { sku: 'SKU匹配', tracking_prefix: '单号匹配' };
+
+// Load warehouses for selects
+async function loadWarehouseOptions() {
+  const res = await apiFetch('/api/warehouses');
+  const data = await res.json();
+  warehouseList = data.data;
+  const selects = ['wizWarehouse', 'filterWarehouse', 'reportWarehouse', 'uWarehouse'];
+  selects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const keep = id === 'filterWarehouse' || id === 'reportWarehouse' || id === 'uWarehouse' ? '<option value="">全部仓库</option>' : '';
+    el.innerHTML = keep + warehouseList.map(w => '<option value="' + w.id + '">' + w.name + ' (' + w.code + ')</option>').join('');
+  });
 }
 
 // ===== Dashboard =====
 async function loadDashboard() {
-  try {
-    const res = await apiFetch('/api/stats');
-    const data = await res.json();
-    document.getElementById('statToday').textContent = data.todayReceived;
-    document.getElementById('statPending').textContent = data.pendingCount;
-    document.getElementById('statRepair').textContent = data.inRepairCount;
-    document.getElementById('statTotal').textContent = data.totalCount;
+  const res = await apiFetch('/api/stats');
+  const data = await res.json();
+  document.getElementById('statToday').textContent = data.todayReceived;
+  document.getElementById('statPending').textContent = data.pendingCount;
+  document.getElementById('statRepair').textContent = data.inRepairCount;
+  document.getElementById('statTotal').textContent = data.totalCount;
 
-    const res2 = await apiFetch('/api/returns?limit=10');
-    const list = await res2.json();
-    document.getElementById('recentReturns').innerHTML = list.data.map(r => `
-      <tr>
-        <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.carrier || '-'}</td>
-        <td>${r.sku || '-'}</td><td>${statusBadge(r.status)}</td><td>${r.created_date}</td>
-      </tr>
-    `).join('');
-  } catch (e) { console.error(e); }
+  const res2 = await apiFetch('/api/returns?limit=10');
+  const list = await res2.json();
+  document.getElementById('recentReturns').innerHTML = list.data.map(r =>
+    '<tr><td>' + r.id + '</td><td>' + r.tracking_number + '</td><td>' + (r.carrier || '-') + '</td><td>' + (r.sku || '-') + '</td><td>' + (r.warehouse_name || '-') + '</td><td>' + (matchLabels[r.matched_by] || '-') + '</td><td>' + statusBadge(r.status) + '</td><td>' + r.created_date + '</td></tr>'
+  ).join('');
 }
 
-// ===== Returns =====
+// ===== Returns with batch select =====
 async function loadReturns() {
   const search = document.getElementById('searchReturns').value;
   const status = document.getElementById('filterStatus').value;
-  let url = '/api/returns?limit=100';
+  const wh = document.getElementById('filterWarehouse').value;
+  let url = '/api/returns?limit=200';
   if (search) url += '&search=' + encodeURIComponent(search);
   if (status) url += '&status=' + encodeURIComponent(status);
+  if (wh) url += '&warehouse_id=' + wh;
 
   const res = await apiFetch(url);
   const data = await res.json();
-  document.getElementById('returnsList').innerHTML = data.data.map(r => `
-    <tr>
-      <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.carrier || '-'}</td>
-      <td>${r.sku || '-'}</td><td>${r.condition || '-'}</td><td>${r.pallet_number || '-'}</td>
-      <td>${r.customer_name || '-'}</td><td>${statusBadge(r.status)}</td><td>${r.created_date}</td>
-    </tr>
-  `).join('');
+  selectedIds.clear();
+  updateBatchBar();
+  document.getElementById('selectAll').checked = false;
+
+  document.getElementById('returnsList').innerHTML = data.data.map(r =>
+    '<tr><td><input type="checkbox" class="row-check" value="' + r.id + '" onchange="toggleSelect(this)"></td><td>' + r.id + '</td><td>' + r.tracking_number + '</td><td>' + (r.carrier || '-') + '</td><td>' + (r.sku || '-') + '</td><td>' + (r.condition || '-') + '</td><td>' + (r.pallet_number || '-') + '</td><td>' + (r.warehouse_name || '-') + '</td><td>' + (r.customer_name || '-') + '</td><td>' + statusBadge(r.status) + '</td><td>' + r.created_date + '</td></tr>'
+  ).join('');
+}
+
+function toggleSelect(cb) {
+  if (cb.checked) selectedIds.add(parseInt(cb.value));
+  else selectedIds.delete(parseInt(cb.value));
+  updateBatchBar();
+}
+function toggleSelectAll() {
+  const checked = document.getElementById('selectAll').checked;
+  document.querySelectorAll('.row-check').forEach(cb => { cb.checked = checked; if (checked) selectedIds.add(parseInt(cb.value)); else selectedIds.delete(parseInt(cb.value)); });
+  updateBatchBar();
+}
+function updateBatchBar() {
+  const bar = document.getElementById('batchBar');
+  if (selectedIds.size > 0) { bar.classList.add('show'); document.getElementById('batchCount').textContent = selectedIds.size; }
+  else bar.classList.remove('show');
+}
+async function batchDecision(decision) {
+  const labels = { resend: '重发', refurbish: '翻新', dispose: '销毁' };
+  if (!confirm('确定对选中的 ' + selectedIds.size + ' 项执行「' + labels[decision] + '」？')) return;
+  await apiFetch('/api/returns/batch/decision', { method: 'POST', body: JSON.stringify({ ids: [...selectedIds], decision }) });
+  loadReturns();
 }
 
 // ===== Repair =====
 async function loadRepairOrders() {
   const res = await apiFetch('/api/repair');
   const data = await res.json();
-  document.getElementById('repairList').innerHTML = data.data.map(r => `
-    <tr>
-      <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.sku || '-'}</td>
-      <td>${r.issue || '-'}</td><td>${r.diagnosis || '-'}</td>
-      <td><div style="background:#eee;border-radius:4px;height:8px;"><div style="background:#27ae60;width:${r.pct}%;height:100%;border-radius:4px;"></div></div><span style="font-size:12px">${r.pct}%</span></td>
-      <td>${statusBadge(r.status)}</td>
-      <td><button class="btn btn-outline" onclick="openRepairModal(${r.id},'${r.status}','${(r.diagnosis||'').replace(/'/g,"\\'")}',${r.pct})">更新</button></td>
-    </tr>
-  `).join('');
+  document.getElementById('repairList').innerHTML = data.data.map(r =>
+    '<tr><td>' + r.id + '</td><td>' + r.tracking_number + '</td><td>' + (r.sku || '-') + '</td><td>' + (r.issue || '-') + '</td><td>' + (r.diagnosis || '-') + '</td><td><div style="background:#eee;border-radius:4px;height:8px"><div style="background:#27ae60;width:' + r.pct + '%;height:100%;border-radius:4px"></div></div><span style="font-size:12px">' + r.pct + '%</span></td><td>' + statusBadge(r.status) + '</td><td><button class="btn btn-outline btn-sm" onclick="openRepairModal(' + r.id + ',\'' + r.status + '\',\'' + (r.diagnosis || '').replace(/'/g, "\\'") + '\',' + r.pct + ')">更新</button></td></tr>'
+  ).join('');
 }
-
 function openRepairModal(id, status, diagnosis, pct) {
   document.getElementById('repairId').value = id;
   document.getElementById('repairStatus').value = status;
@@ -464,19 +535,90 @@ function openRepairModal(id, status, diagnosis, pct) {
   document.getElementById('repairModal').classList.add('show');
 }
 function closeRepairModal() { document.getElementById('repairModal').classList.remove('show'); }
-
 async function saveRepair() {
-  const id = document.getElementById('repairId').value;
-  await apiFetch('/api/repair/' + id, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      status: document.getElementById('repairStatus').value,
-      diagnosis: document.getElementById('repairDiagnosis').value,
-      pct: parseInt(document.getElementById('repairPct').value)
-    })
+  await apiFetch('/api/repair/' + document.getElementById('repairId').value, {
+    method: 'PATCH', body: JSON.stringify({ status: document.getElementById('repairStatus').value, diagnosis: document.getElementById('repairDiagnosis').value, pct: parseInt(document.getElementById('repairPct').value) })
   });
-  closeRepairModal();
-  loadRepairOrders();
+  closeRepairModal(); loadRepairOrders();
+}
+
+// ===== Analytics =====
+async function loadAnalytics() {
+  const start = document.getElementById('reportStart').value;
+  const end = document.getElementById('reportEnd').value;
+  const wh = document.getElementById('reportWarehouse').value;
+  let url = '/api/analytics?';
+  if (start) url += 'start_date=' + start + '&';
+  if (end) url += 'end_date=' + end + '&';
+  if (wh) url += 'warehouse_id=' + wh;
+
+  const res = await apiFetch(url);
+  const d = await res.json();
+
+  document.getElementById('reportSummary').innerHTML =
+    '<div class="stat-card"><div class="label">总退货数</div><div class="value">' + d.summary.total + '</div></div>' +
+    '<div class="stat-card"><div class="label">损坏数</div><div class="value">' + d.summary.damaged + '</div></div>' +
+    '<div class="stat-card"><div class="label">损坏率</div><div class="value">' + d.summary.damageRate + '%</div></div>';
+
+  renderBarChart('chartDaily', d.dailyCounts, 'date', 'count');
+  const sLabels = { received: '已收货', unclaimed: '无主货', resend: '重发', refurbish: '翻新', in_repair: '维修中', done: '已完成', dispose: '已销毁' };
+  renderBarChart('chartStatus', d.statusDist.map(r => ({ ...r, label: sLabels[r.status] || r.status })), 'label', 'count');
+  renderBarChart('chartCondition', d.conditionDist, 'condition', 'count');
+  renderBarChart('chartCarrier', d.carrierDist, 'carrier', 'count');
+  renderBarChart('chartTopSku', d.topSkus, 'sku', 'count');
+  renderBarChart('chartWarehouse', d.warehouseDist, 'warehouse_name', 'count');
+}
+
+function renderBarChart(containerId, data, labelKey, valueKey) {
+  const el = document.getElementById(containerId);
+  if (!data || !data.length) { el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:8px">暂无数据</div>'; return; }
+  const max = Math.max(...data.map(d => d[valueKey]));
+  el.innerHTML = data.map(d => '<div class="bar-row"><span class="bar-label">' + (d[labelKey] || '-') + '</span><div class="bar-fill" style="width:' + (max > 0 ? d[valueKey] / max * 100 : 0) + '%"></div><span class="bar-value">' + d[valueKey] + '</span></div>').join('');
+}
+
+// ===== Warehouses =====
+async function loadWarehouses() {
+  const res = await apiFetch('/api/warehouses');
+  const data = await res.json();
+  document.getElementById('warehousesList').innerHTML = data.data.map(w =>
+    '<tr><td>' + w.id + '</td><td>' + w.code + '</td><td>' + w.name + '</td><td>' + (w.address || '-') + '</td><td>' + (w.city || '-') + '</td><td>' + (w.country || '-') + '</td><td>' + (w.is_active ? '<span style="color:#27ae60">启用</span>' : '<span style="color:#e74c3c">禁用</span>') + '</td><td><button class="btn btn-outline btn-sm" onclick="editWarehouse(' + w.id + ')">编辑</button></td></tr>'
+  ).join('');
+}
+function openWarehouseModal() {
+  document.getElementById('whModalTitle').textContent = '新增仓库';
+  document.getElementById('editWhId').value = '';
+  document.getElementById('whCode').value = ''; document.getElementById('whCode').disabled = false;
+  document.getElementById('whName').value = '';
+  document.getElementById('whAddress').value = '';
+  document.getElementById('whCity').value = '';
+  document.getElementById('whCountry').value = 'US';
+  document.getElementById('warehouseModal').classList.add('show');
+}
+function closeWarehouseModal() { document.getElementById('warehouseModal').classList.remove('show'); }
+async function editWarehouse(id) {
+  const wh = warehouseList.find(w => w.id === id);
+  if (!wh) return;
+  document.getElementById('whModalTitle').textContent = '编辑仓库';
+  document.getElementById('editWhId').value = wh.id;
+  document.getElementById('whCode').value = wh.code; document.getElementById('whCode').disabled = true;
+  document.getElementById('whName').value = wh.name;
+  document.getElementById('whAddress').value = wh.address || '';
+  document.getElementById('whCity').value = wh.city || '';
+  document.getElementById('whCountry').value = wh.country || '';
+  document.getElementById('warehouseModal').classList.add('show');
+}
+async function saveWarehouse() {
+  const editId = document.getElementById('editWhId').value;
+  if (editId) {
+    await apiFetch('/api/warehouses/' + editId, { method: 'PATCH', body: JSON.stringify({ name: document.getElementById('whName').value, address: document.getElementById('whAddress').value, city: document.getElementById('whCity').value, country: document.getElementById('whCountry').value }) });
+  } else {
+    const code = document.getElementById('whCode').value.trim();
+    const name = document.getElementById('whName').value.trim();
+    if (!code || !name) { alert('编码和名称不能为空'); return; }
+    const res = await apiFetch('/api/warehouses', { method: 'POST', body: JSON.stringify({ code, name, address: document.getElementById('whAddress').value, city: document.getElementById('whCity').value, country: document.getElementById('whCountry').value }) });
+    if (!res.ok) { const d = await res.json(); alert(d.error); return; }
+  }
+  closeWarehouseModal(); loadWarehouses(); loadWarehouseOptions();
 }
 
 // ===== Users =====
@@ -484,29 +626,23 @@ async function loadUsers() {
   const res = await apiFetch('/api/users');
   const data = await res.json();
   const roleLabels = { admin: '管理员', staff: '员工', customer: '货主', repair: '维修' };
-  document.getElementById('usersList').innerHTML = data.data.map(u => `
-    <tr>
-      <td>${u.id}</td><td>${u.username}</td><td>${roleLabels[u.role] || u.role}</td>
-      <td>${u.display_name || '-'}</td><td>${u.customer_code || '-'}</td>
-      <td>${u.is_active ? '<span style="color:#27ae60">启用</span>' : '<span style="color:#e74c3c">禁用</span>'}</td>
-      <td><button class="btn btn-outline" onclick="editUser(${u.id})">编辑</button></td>
-    </tr>
-  `).join('');
+  document.getElementById('usersList').innerHTML = data.data.map(u =>
+    '<tr><td>' + u.id + '</td><td>' + u.username + '</td><td>' + (roleLabels[u.role] || u.role) + '</td><td>' + (u.display_name || '-') + '</td><td>' + (u.customer_code || '-') + '</td><td>' + (u.email || '-') + '</td><td>' + (u.warehouse_name || '-') + '</td><td>' + (u.is_active ? '<span style="color:#27ae60">启用</span>' : '<span style="color:#e74c3c">禁用</span>') + '</td><td><button class="btn btn-outline btn-sm" onclick="editUser(' + u.id + ')">编辑</button></td></tr>'
+  ).join('');
 }
-
 function openUserModal() {
   document.getElementById('userModalTitle').textContent = '新增用户';
   document.getElementById('editUserId').value = '';
-  document.getElementById('uUsername').value = '';
-  document.getElementById('uUsername').disabled = false;
+  document.getElementById('uUsername').value = ''; document.getElementById('uUsername').disabled = false;
   document.getElementById('uPassword').value = '';
   document.getElementById('uDisplayName').value = '';
+  document.getElementById('uEmail').value = '';
   document.getElementById('uRole').value = 'staff';
   document.getElementById('uCustomerCode').value = '';
+  document.getElementById('uWarehouse').value = '';
   document.getElementById('userModal').classList.add('show');
 }
 function closeUserModal() { document.getElementById('userModal').classList.remove('show'); }
-
 async function editUser(id) {
   const res = await apiFetch('/api/users');
   const data = await res.json();
@@ -514,25 +650,20 @@ async function editUser(id) {
   if (!u) return;
   document.getElementById('userModalTitle').textContent = '编辑用户';
   document.getElementById('editUserId').value = u.id;
-  document.getElementById('uUsername').value = u.username;
-  document.getElementById('uUsername').disabled = true;
+  document.getElementById('uUsername').value = u.username; document.getElementById('uUsername').disabled = true;
   document.getElementById('uPassword').value = '';
   document.getElementById('uDisplayName').value = u.display_name || '';
+  document.getElementById('uEmail').value = u.email || '';
   document.getElementById('uRole').value = u.role;
   document.getElementById('uCustomerCode').value = u.customer_code || '';
+  document.getElementById('uWarehouse').value = u.warehouse_id || '';
   document.getElementById('userModal').classList.add('show');
 }
-
 async function saveUser() {
   const editId = document.getElementById('editUserId').value;
-  const payload = {
-    display_name: document.getElementById('uDisplayName').value,
-    role: document.getElementById('uRole').value,
-    customer_code: document.getElementById('uCustomerCode').value
-  };
+  const payload = { display_name: document.getElementById('uDisplayName').value, role: document.getElementById('uRole').value, customer_code: document.getElementById('uCustomerCode').value, email: document.getElementById('uEmail').value, warehouse_id: document.getElementById('uWarehouse').value || null };
   const pwd = document.getElementById('uPassword').value;
   if (pwd) payload.password = pwd;
-
   if (editId) {
     await apiFetch('/api/users/' + editId, { method: 'PATCH', body: JSON.stringify(payload) });
   } else {
@@ -541,98 +672,61 @@ async function saveUser() {
     if (!payload.username || !payload.password) { alert('用户名和密码不能为空'); return; }
     await apiFetch('/api/users', { method: 'POST', body: JSON.stringify(payload) });
   }
-  closeUserModal();
-  loadUsers();
+  closeUserModal(); loadUsers();
 }
 
 // ===== Wizard =====
-let wizardStep = 1;
-let wizardPhotos = [];
-let wizardCondition = '';
-
-function detectCarrier(tracking) {
-  if (!tracking) return '';
-  if (/^1Z/i.test(tracking)) return 'UPS';
-  if (/^\d{12,22}$/.test(tracking)) return 'FedEx';
-  if (/^\d{20,22}$/.test(tracking) || /^9[2-5]\d{20,}$/.test(tracking)) return 'USPS';
-  if (/^TBA/i.test(tracking)) return 'Amazon';
-  if (/^JD/i.test(tracking)) return 'JD Logistics';
+let wizardStep = 1, wizardPhotos = [], wizardCondition = '';
+function detectCarrier(t) {
+  if (!t) return '';
+  if (/^1Z/i.test(t)) return 'UPS';
+  if (/^\d{12,22}$/.test(t)) return 'FedEx';
+  if (/^\d{20,22}$/.test(t) || /^9[2-5]\d{20,}$/.test(t)) return 'USPS';
+  if (/^TBA/i.test(t)) return 'Amazon';
+  if (/^JD/i.test(t)) return 'JD Logistics';
   return '';
 }
-
-document.getElementById('wizTracking').addEventListener('input', (e) => {
-  document.getElementById('wizCarrier').value = detectCarrier(e.target.value.trim());
-});
-
-document.getElementById('wizPhotos').addEventListener('change', (e) => {
+document.getElementById('wizTracking').addEventListener('input', e => { document.getElementById('wizCarrier').value = detectCarrier(e.target.value.trim()); });
+document.getElementById('wizPhotos').addEventListener('change', e => {
   wizardPhotos = Array.from(e.target.files);
-  const preview = document.getElementById('photoPreview');
-  preview.innerHTML = '';
-  wizardPhotos.forEach(f => {
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(f);
-    preview.appendChild(img);
-  });
+  const p = document.getElementById('photoPreview'); p.innerHTML = '';
+  wizardPhotos.forEach(f => { const img = document.createElement('img'); img.src = URL.createObjectURL(f); p.appendChild(img); });
 });
-
-function selectCondition(el) {
-  document.querySelectorAll('.condition-option').forEach(x => x.classList.remove('selected'));
-  el.classList.add('selected');
-  wizardCondition = el.dataset.value;
-}
-
+function selectCondition(el) { document.querySelectorAll('.condition-option').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); wizardCondition = el.dataset.value; }
 function openWizard() {
-  wizardStep = 1;
-  wizardPhotos = [];
-  wizardCondition = '';
-  document.getElementById('wizTracking').value = '';
-  document.getElementById('wizCarrier').value = '';
-  document.getElementById('wizSku').value = '';
-  document.getElementById('wizPallet').value = '';
-  document.getElementById('wizNotes').value = '';
-  document.getElementById('photoPreview').innerHTML = '';
+  wizardStep = 1; wizardPhotos = []; wizardCondition = '';
+  document.getElementById('wizTracking').value = ''; document.getElementById('wizCarrier').value = '';
+  document.getElementById('wizSku').value = ''; document.getElementById('wizPallet').value = '';
+  document.getElementById('wizNotes').value = ''; document.getElementById('photoPreview').innerHTML = '';
+  document.getElementById('wizMatchInfo').style.display = 'none';
   document.querySelectorAll('.condition-option').forEach(x => x.classList.remove('selected'));
-  updateWizardUI();
-  document.getElementById('wizardOverlay').classList.add('show');
+  updateWizardUI(); document.getElementById('wizardOverlay').classList.add('show');
 }
-
 function closeWizard() { document.getElementById('wizardOverlay').classList.remove('show'); }
-
 function updateWizardUI() {
-  for (let i = 1; i <= 4; i++) {
-    document.getElementById('wizStep' + i).style.display = i === wizardStep ? 'block' : 'none';
-    const stepEl = document.getElementById('ws' + i);
-    stepEl.className = 'step' + (i === wizardStep ? ' active' : i < wizardStep ? ' done' : '');
-  }
+  for (let i = 1; i <= 4; i++) { document.getElementById('wizStep' + i).style.display = i === wizardStep ? 'block' : 'none'; document.getElementById('ws' + i).className = 'step' + (i === wizardStep ? ' active' : i < wizardStep ? ' done' : ''); }
   document.getElementById('wizBtnBack').style.visibility = wizardStep > 1 ? 'visible' : 'hidden';
   document.getElementById('wizBtnNext').textContent = wizardStep === 4 ? '提交' : '下一步';
 }
-
-function wizardBack() {
-  if (wizardStep > 1) { wizardStep--; updateWizardUI(); }
-}
-
+function wizardBack() { if (wizardStep > 1) { wizardStep--; updateWizardUI(); } }
 async function wizardNext() {
   if (wizardStep === 1) {
     if (!document.getElementById('wizTracking').value.trim()) { alert('请输入快递单号'); return; }
     wizardStep++;
-  } else if (wizardStep === 2) {
-    wizardStep++;
-  } else if (wizardStep === 3) {
-    // Show summary
-    const summary = `
-      <p><strong>快递单号:</strong> ${document.getElementById('wizTracking').value}</p>
-      <p><strong>快递公司:</strong> ${document.getElementById('wizCarrier').value || '未识别'}</p>
-      <p><strong>SKU:</strong> ${document.getElementById('wizSku').value || '-'}</p>
-      <p><strong>托盘号:</strong> ${document.getElementById('wizPallet').value || '-'}</p>
-      <p><strong>照片数量:</strong> ${wizardPhotos.length} 张</p>
-      <p><strong>外观评级:</strong> ${wizardCondition || '未选择'}</p>
-      <p><strong>备注:</strong> ${document.getElementById('wizNotes').value || '-'}</p>
-    `;
-    document.getElementById('wizSummary').innerHTML = summary;
+  } else if (wizardStep === 2) { wizardStep++; } else if (wizardStep === 3) {
+    const whSel = document.getElementById('wizWarehouse');
+    const whName = whSel.options[whSel.selectedIndex] ? whSel.options[whSel.selectedIndex].text : '-';
+    document.getElementById('wizSummary').innerHTML =
+      '<p><strong>快递单号:</strong> ' + document.getElementById('wizTracking').value + '</p>' +
+      '<p><strong>快递公司:</strong> ' + (document.getElementById('wizCarrier').value || '未识别') + '</p>' +
+      '<p><strong>SKU:</strong> ' + (document.getElementById('wizSku').value || '-') + '</p>' +
+      '<p><strong>托盘号:</strong> ' + (document.getElementById('wizPallet').value || '-') + '</p>' +
+      '<p><strong>仓库:</strong> ' + whName + '</p>' +
+      '<p><strong>照片数量:</strong> ' + wizardPhotos.length + ' 张</p>' +
+      '<p><strong>外观评级:</strong> ' + (wizardCondition || '未选择') + '</p>' +
+      '<p><strong>备注:</strong> ' + (document.getElementById('wizNotes').value || '-') + '</p>';
     wizardStep++;
   } else if (wizardStep === 4) {
-    // Submit
     const formData = new FormData();
     formData.append('tracking_number', document.getElementById('wizTracking').value.trim());
     formData.append('carrier', document.getElementById('wizCarrier').value);
@@ -640,34 +734,80 @@ async function wizardNext() {
     formData.append('pallet_number', document.getElementById('wizPallet').value);
     formData.append('condition', wizardCondition);
     formData.append('notes', document.getElementById('wizNotes').value);
+    formData.append('warehouse_id', document.getElementById('wizWarehouse').value);
     wizardPhotos.forEach(f => formData.append('photos', f));
-
     try {
-      const res = await fetch(API + '/api/returns', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token },
-        body: formData
-      });
+      const res = await fetch(API + '/api/returns', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert('入库成功！退货单ID: ' + data.id);
-      closeWizard();
-      loadDashboard();
-    } catch (e) {
-      alert('入库失败: ' + e.message);
-    }
+      let msg = '入库成功！退货单ID: ' + data.id;
+      if (data.matchedBy) msg += '\n(已自动匹配货主，方式: ' + matchLabels[data.matchedBy] + ')';
+      alert(msg);
+      closeWizard(); loadDashboard();
+    } catch (e) { alert('入库失败: ' + e.message); }
     return;
   }
   updateWizardUI();
 }
 
-// ===== Export =====
-function exportExcel() {
-  window.open(API + '/api/export?token=' + token, '_blank');
+// ===== Batch Pallet =====
+function openBatchPalletModal() { document.getElementById('bpPallet').value = ''; document.getElementById('bpDecision').value = ''; document.getElementById('bpNotes').value = ''; document.getElementById('bpResult').innerHTML = ''; document.getElementById('batchPalletModal').classList.add('show'); }
+function closeBatchPalletModal() { document.getElementById('batchPalletModal').classList.remove('show'); }
+async function executeBatchPallet() {
+  const pallet = document.getElementById('bpPallet').value.trim();
+  if (!pallet) { alert('请输入托盘号'); return; }
+  const decision = document.getElementById('bpDecision').value;
+  const notes = document.getElementById('bpNotes').value;
+  const body = { pallet_number: pallet };
+  if (decision) { body.decision = decision; body.notes = notes; }
+  const res = await apiFetch('/api/returns/batch/pallet', { method: 'POST', body: JSON.stringify(body) });
+  const data = await res.json();
+  if (!res.ok) { document.getElementById('bpResult').innerHTML = '<span style="color:#e74c3c">' + data.error + '</span>'; return; }
+  document.getElementById('bpResult').innerHTML = '<span style="color:#27ae60">成功处理 ' + data.count + ' 条退货记录</span>';
+  loadReturns();
 }
 
-// Init
-loadDashboard();
+// ===== OCR =====
+function openOcrModal() { document.getElementById('ocrResult').style.display = 'none'; document.getElementById('ocrStatus').textContent = ''; document.getElementById('ocrModal').classList.add('show'); }
+function closeOcrModal() { document.getElementById('ocrModal').classList.remove('show'); }
+async function runOcr() {
+  const fileInput = document.getElementById('ocrImage');
+  if (!fileInput.files.length) { alert('请选择图片'); return; }
+  document.getElementById('ocrStatus').textContent = '正在识别中，请稍候...';
+  const formData = new FormData();
+  formData.append('image', fileInput.files[0]);
+  try {
+    const res = await fetch(API + '/api/ocr', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData });
+    const data = await res.json();
+    const resultEl = document.getElementById('ocrResult');
+    resultEl.style.display = 'block';
+    document.getElementById('ocrStatus').textContent = '';
+    if (data.trackingNumbers.length > 0) {
+      resultEl.innerHTML = '<p><strong>识别到的快递单号：</strong></p>' + data.trackingNumbers.map(t => '<p class="found" onclick="useOcrTracking(\'' + t + '\')">' + t + ' (点击使用)</p>').join('');
+    } else {
+      resultEl.innerHTML = '<p>未识别到快递单号</p><p style="color:#888;font-size:12px">原始文字: ' + (data.text || '无').substring(0, 200) + '</p>';
+    }
+  } catch (e) { document.getElementById('ocrStatus').textContent = '识别失败: ' + e.message; }
+}
+function useOcrTracking(num) {
+  closeOcrModal();
+  openWizard();
+  document.getElementById('wizTracking').value = num;
+  document.getElementById('wizCarrier').value = detectCarrier(num);
+}
+
+// ===== Export =====
+function exportExcel() { window.open(API + '/api/export?token=' + token, '_blank'); }
+
+// ===== Init =====
+(async () => {
+  // Set default report dates
+  const now = new Date();
+  document.getElementById('reportEnd').value = now.toISOString().split('T')[0];
+  document.getElementById('reportStart').value = new Date(now - 30 * 86400000).toISOString().split('T')[0];
+  await loadWarehouseOptions();
+  loadDashboard();
+})();
 </script>
 </body>
 </html>

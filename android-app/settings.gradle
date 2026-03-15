@@ -1,0 +1,2 @@
+rootProject.name = 'WMS-PDA'
+include ':app'

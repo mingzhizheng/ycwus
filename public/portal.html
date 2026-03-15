@@ -15,16 +15,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .topbar h1 { font-size: 18px; }
 .topbar .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
 .topbar .btn-logout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.notif-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; position: relative; }
+.notif-badge { position: absolute; top: -4px; right: -4px; background: #e74c3c; color: #fff; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
 .container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
 
-/* Tabs */
 .tabs { display: flex; gap: 4px; background: #fff; border-radius: 12px; padding: 4px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
-.tab {
-  padding: 10px 16px; border-radius: 8px; border: none; background: transparent;
-  cursor: pointer; font-size: 13px; font-weight: 500; color: #888; white-space: nowrap;
-  transition: all .2s;
-}
+.tab { padding: 10px 16px; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-weight: 500; color: #888; white-space: nowrap; transition: all .2s; }
 .tab.active { background: #667eea; color: #fff; }
 .tab:hover:not(.active) { background: #f0f0f0; }
 
@@ -33,19 +30,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 
 .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
 
-/* Return items */
-.return-item {
-  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
-  cursor: pointer; transition: all .2s;
-}
+.return-item { border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px; cursor: pointer; transition: all .2s; }
 .return-item:hover { border-color: #667eea; box-shadow: 0 2px 12px rgba(102,126,234,0.1); }
 .return-item .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .return-item .tracking { font-weight: 600; font-size: 15px; color: #333; }
-.return-item .meta { display: flex; gap: 16px; font-size: 13px; color: #888; }
+.return-item .meta { display: flex; gap: 16px; font-size: 13px; color: #888; flex-wrap: wrap; }
 
-.badge {
-  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
-}
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .badge-received { background: #e3f2fd; color: #1976d2; }
 .badge-unclaimed { background: #fff3e0; color: #e65100; }
 .badge-pending { background: #fce4ec; color: #c62828; }
@@ -55,12 +46,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .badge-done { background: #e8f5e9; color: #1b5e20; }
 .badge-dispose { background: #efebe9; color: #4e342e; }
 
-/* Timeline */
 .timeline { padding: 16px 0; }
 .timeline-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
-.timeline-item::before {
-  content: ''; position: absolute; left: 7px; top: 20px; bottom: 0; width: 2px; background: #eee;
-}
+.timeline-item::before { content: ''; position: absolute; left: 7px; top: 20px; bottom: 0; width: 2px; background: #eee; }
 .timeline-item:last-child::before { display: none; }
 .timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: #667eea; flex-shrink: 0; margin-top: 2px; }
 .timeline-content { flex: 1; }
@@ -68,32 +56,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .timeline-content .note { font-size: 13px; color: #888; margin-top: 2px; }
 .timeline-content .time { font-size: 12px; color: #aaa; margin-top: 2px; }
 
-/* Decision */
-.decision-card {
-  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
-}
+.decision-card { border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
 .decision-card .info { margin-bottom: 12px; }
 .decision-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+/* Batch decision for customer */
+.batch-select { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+.batch-select label { font-size: 13px; color: #555; }
+
 .btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .2s; }
 .btn-primary { background: #667eea; color: #fff; }
 .btn-success { background: #27ae60; color: #fff; }
 .btn-warning { background: #f39c12; color: #fff; }
 .btn-danger { background: #e74c3c; color: #fff; }
 .btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn:hover { opacity: 0.85; }
 
-/* Unclaimed */
-.unclaimed-card {
-  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
-}
+.unclaimed-card { border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
 .unclaimed-photos { display: flex; gap: 8px; margin: 8px 0; }
 .unclaimed-photos img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
 
-/* Search */
 .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
 .search-bar input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
 
-/* Product table */
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
 td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
@@ -103,11 +88,7 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
 .form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
 .form-group input:focus { outline: none; border-color: #667eea; }
 
-/* Detail modal */
-.modal-overlay {
-  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
-}
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center; }
 .modal-overlay.show { display: flex; }
 .modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 520px; max-height: 80vh; overflow-y: auto; }
 .modal-box h2 { margin-bottom: 16px; font-size: 18px; }
@@ -117,10 +98,16 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
 .detail-photos img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
 
 .empty-state { text-align: center; padding: 40px 20px; color: #888; font-size: 14px; }
-
-/* Repair progress */
 .progress-bar { background: #eee; border-radius: 4px; height: 8px; margin-top: 6px; }
 .progress-fill { background: #27ae60; height: 100%; border-radius: 4px; transition: width .3s; }
+
+/* Notifications */
+.notif-item { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; cursor: pointer; }
+.notif-item:hover { background: #f8f9ff; }
+.notif-item.unread { background: #f0f3ff; border-left: 3px solid #667eea; }
+.notif-item .notif-title { font-weight: 600; color: #333; margin-bottom: 4px; }
+.notif-item .notif-msg { color: #666; }
+.notif-item .notif-time { color: #aaa; font-size: 12px; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -128,6 +115,9 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
 <div class="topbar">
   <h1>货主自助门户</h1>
   <div class="user-info">
+    <button class="notif-btn" onclick="toggleNotifTab()">
+      通知 <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+    </button>
     <span id="userDisplay"></span>
     <button class="btn-logout" onclick="logout()">退出登录</button>
   </div>
@@ -140,12 +130,13 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
     <button class="tab" data-tab="unclaimed">认领货品</button>
     <button class="tab" data-tab="repairs">维修进度</button>
     <button class="tab" data-tab="products">货品管理</button>
+    <button class="tab" data-tab="notifications">通知中心</button>
   </div>
 
   <!-- 我的退货 -->
   <div class="tab-content active" id="tab-myreturns">
     <div class="search-bar">
-      <input type="text" id="searchMyReturns" placeholder="搜索单号 / SKU...">
+      <input type="text" id="searchMyReturns" placeholder="搜索单号 / SKU..." onkeyup="if(event.key==='Enter')loadMyReturns()">
       <button class="btn btn-primary" onclick="loadMyReturns()">搜索</button>
     </div>
     <div id="myReturnsList"></div>
@@ -153,13 +144,19 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
 
   <!-- 待处理决策 -->
   <div class="tab-content" id="tab-decisions">
+    <div class="batch-select" id="batchDecisionBar" style="display:none">
+      <span>已选 <strong id="batchDecCount">0</strong> 项：</span>
+      <button class="btn btn-success btn-sm" onclick="batchCustomerDecision('resend')">批量重发</button>
+      <button class="btn btn-warning btn-sm" onclick="batchCustomerDecision('refurbish')">批量翻新</button>
+      <button class="btn btn-danger btn-sm" onclick="batchCustomerDecision('dispose')">批量销毁</button>
+    </div>
     <div id="decisionsList"></div>
   </div>
 
   <!-- 认领货品 -->
   <div class="tab-content" id="tab-unclaimed">
     <div class="search-bar">
-      <input type="text" id="searchUnclaimed" placeholder="搜索单号 / SKU...">
+      <input type="text" id="searchUnclaimed" placeholder="搜索单号 / SKU..." onkeyup="if(event.key==='Enter')loadUnclaimed()">
       <button class="btn btn-primary" onclick="loadUnclaimed()">搜索</button>
     </div>
     <div id="unclaimedList"></div>
@@ -192,6 +189,17 @@ td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
       </table>
     </div>
   </div>
+
+  <!-- 通知中心 -->
+  <div class="tab-content" id="tab-notifications">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:16px">通知中心</h3>
+        <button class="btn btn-outline btn-sm" onclick="markAllRead()">全部已读</button>
+      </div>
+      <div id="notifList"></div>
+    </div>
+  </div>
 </div>
 
 <!-- Detail Modal -->
@@ -212,8 +220,9 @@ if (user.role !== 'customer' && user.role !== 'admin') window.location.href = '/
 
 document.getElementById('userDisplay').textContent = user.display_name || user.username;
 
-function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+let decisionSelectedIds = new Set();
 
+function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
 async function apiFetch(url, opts = {}) {
   const res = await fetch(API + url, { headers: headers(), ...opts });
   if (res.status === 401) { localStorage.clear(); window.location.href = '/login.html'; }
@@ -227,18 +236,50 @@ document.querySelectorAll('.tab').forEach(t => {
     t.classList.add('active');
     document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
     document.getElementById('tab-' + t.dataset.tab).classList.add('active');
-    if (t.dataset.tab === 'myreturns') loadMyReturns();
-    if (t.dataset.tab === 'decisions') loadDecisions();
-    if (t.dataset.tab === 'unclaimed') loadUnclaimed();
-    if (t.dataset.tab === 'repairs') loadRepairs();
-    if (t.dataset.tab === 'products') loadProducts();
+    const loaders = { myreturns: loadMyReturns, decisions: loadDecisions, unclaimed: loadUnclaimed, repairs: loadRepairs, products: loadProducts, notifications: loadNotifications };
+    if (loaders[t.dataset.tab]) loaders[t.dataset.tab]();
   });
 });
 
 const statusLabels = { received: '已收货', unclaimed: '无主货', pending: '待决策', resend: '重发', refurbish: '翻新', in_repair: '维修中', done: '已完成', dispose: '已销毁' };
-function statusBadge(s) { return `<span class="badge badge-${s}">${statusLabels[s] || s}</span>`; }
-
+function statusBadge(s) { return '<span class="badge badge-' + s + '">' + (statusLabels[s] || s) + '</span>'; }
 function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+
+function toggleNotifTab() {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelector('[data-tab="notifications"]').classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+  document.getElementById('tab-notifications').classList.add('active');
+  loadNotifications();
+}
+
+// ===== 通知 =====
+async function loadNotifCount() {
+  const res = await apiFetch('/api/notifications');
+  const data = await res.json();
+  const badge = document.getElementById('notifBadge');
+  if (data.unread > 0) { badge.textContent = data.unread; badge.style.display = 'flex'; }
+  else badge.style.display = 'none';
+}
+
+async function loadNotifications() {
+  const res = await apiFetch('/api/notifications');
+  const data = await res.json();
+  const el = document.getElementById('notifList');
+  if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无通知</div>'; return; }
+  el.innerHTML = data.data.map(n =>
+    '<div class="notif-item' + (n.is_read ? '' : ' unread') + '">' +
+    '<div class="notif-title">' + n.title + '</div>' +
+    '<div class="notif-msg">' + (n.message || '') + '</div>' +
+    '<div class="notif-time">' + n.created_at + '</div></div>'
+  ).join('');
+}
+
+async function markAllRead() {
+  await apiFetch('/api/notifications/read', { method: 'PATCH', body: JSON.stringify({}) });
+  loadNotifications();
+  loadNotifCount();
+}
 
 // ===== 我的退货 =====
 async function loadMyReturns() {
@@ -249,19 +290,11 @@ async function loadMyReturns() {
   const data = await res.json();
   const el = document.getElementById('myReturnsList');
   if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无退货记录</div>'; return; }
-  el.innerHTML = data.data.map(r => `
-    <div class="return-item" onclick="showDetail(${r.id})">
-      <div class="top">
-        <span class="tracking">${r.tracking_number}</span>
-        ${statusBadge(r.status)}
-      </div>
-      <div class="meta">
-        <span>SKU: ${r.sku || '-'}</span>
-        <span>外观: ${r.condition || '-'}</span>
-        <span>${r.created_date}</span>
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = data.data.map(r =>
+    '<div class="return-item" onclick="showDetail(' + r.id + ')">' +
+    '<div class="top"><span class="tracking">' + r.tracking_number + '</span>' + statusBadge(r.status) + '</div>' +
+    '<div class="meta"><span>SKU: ' + (r.sku || '-') + '</span><span>外观: ' + (r.condition || '-') + '</span><span>仓库: ' + (r.warehouse_name || '-') + '</span><span>' + r.created_date + '</span></div></div>'
+  ).join('');
 }
 
 // ===== 退货详情 =====
@@ -269,62 +302,68 @@ async function showDetail(id) {
   const res = await apiFetch('/api/returns/' + id);
   const r = await res.json();
   const photos = JSON.parse(r.photos || '[]');
-  document.getElementById('detailContent').innerHTML = `
-    <p><strong>快递单号:</strong> ${r.tracking_number}</p>
-    <p><strong>快递公司:</strong> ${r.carrier || '-'}</p>
-    <p><strong>SKU:</strong> ${r.sku || '-'}</p>
-    <p><strong>外观:</strong> ${r.condition || '-'}</p>
-    <p><strong>托盘号:</strong> ${r.pallet_number || '-'}</p>
-    <p><strong>状态:</strong> ${statusBadge(r.status)}</p>
-    <p><strong>备注:</strong> ${r.notes || '-'}</p>
-    ${photos.length ? `<div class="detail-photos">${photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
-    <h3 style="margin-top:16px;margin-bottom:8px;font-size:15px">操作记录</h3>
-    <div class="timeline">
-      ${(r.logs || []).map(l => `
-        <div class="timeline-item">
-          <div class="timeline-dot"></div>
-          <div class="timeline-content">
-            <div class="action">${l.action}</div>
-            <div class="note">${l.note || ''}</div>
-            <div class="time">${l.created_at} · ${l.created_by_name || ''}</div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+  document.getElementById('detailContent').innerHTML =
+    '<p><strong>快递单号:</strong> ' + r.tracking_number + '</p>' +
+    '<p><strong>快递公司:</strong> ' + (r.carrier || '-') + '</p>' +
+    '<p><strong>SKU:</strong> ' + (r.sku || '-') + '</p>' +
+    '<p><strong>外观:</strong> ' + (r.condition || '-') + '</p>' +
+    '<p><strong>托盘号:</strong> ' + (r.pallet_number || '-') + '</p>' +
+    '<p><strong>仓库:</strong> ' + (r.warehouse_name || '-') + '</p>' +
+    '<p><strong>状态:</strong> ' + statusBadge(r.status) + '</p>' +
+    '<p><strong>备注:</strong> ' + (r.notes || '-') + '</p>' +
+    (photos.length ? '<div class="detail-photos">' + photos.map(function(p) { return '<img src="' + p + '">'; }).join('') + '</div>' : '') +
+    '<h3 style="margin-top:16px;margin-bottom:8px;font-size:15px">操作记录</h3>' +
+    '<div class="timeline">' + (r.logs || []).map(function(l) {
+      return '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="action">' + l.action + '</div><div class="note">' + (l.note || '') + '</div><div class="time">' + l.created_at + ' · ' + (l.created_by_name || '') + '</div></div></div>';
+    }).join('') + '</div>';
   document.getElementById('detailModal').classList.add('show');
 }
 function closeDetail() { document.getElementById('detailModal').classList.remove('show'); }
 
-// ===== 待处理决策 =====
+// ===== 待处理决策 (带批量) =====
 async function loadDecisions() {
+  decisionSelectedIds.clear();
+  updateDecBatchBar();
   const res = await apiFetch('/api/returns?status=received&limit=100');
   const data = await res.json();
   const el = document.getElementById('decisionsList');
   if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无待处理的货品</div>'; return; }
-  el.innerHTML = data.data.map(r => `
-    <div class="decision-card">
-      <div class="info">
-        <strong>${r.tracking_number}</strong> · ${r.sku || '-'} · ${r.condition || '-'}
-        <div style="font-size:12px;color:#888;margin-top:4px">${r.created_date}</div>
-      </div>
-      <div class="decision-btns">
-        <button class="btn btn-success" onclick="makeDecision(${r.id},'resend')">重新发货</button>
-        <button class="btn btn-warning" onclick="makeDecision(${r.id},'refurbish')">翻新处理</button>
-        <button class="btn btn-danger" onclick="makeDecision(${r.id},'dispose')">销毁</button>
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = data.data.map(r =>
+    '<div class="decision-card">' +
+    '<div class="info" style="display:flex;align-items:start;gap:8px">' +
+    '<input type="checkbox" class="dec-check" value="' + r.id + '" onchange="toggleDecSelect(this)" style="margin-top:4px">' +
+    '<div><strong>' + r.tracking_number + '</strong> · ' + (r.sku || '-') + ' · ' + (r.condition || '-') +
+    '<div style="font-size:12px;color:#888;margin-top:4px">' + r.created_date + '</div></div></div>' +
+    '<div class="decision-btns">' +
+    '<button class="btn btn-success" onclick="makeDecision(' + r.id + ',\'resend\')">重新发货</button>' +
+    '<button class="btn btn-warning" onclick="makeDecision(' + r.id + ',\'refurbish\')">翻新处理</button>' +
+    '<button class="btn btn-danger" onclick="makeDecision(' + r.id + ',\'dispose\')">销毁</button></div></div>'
+  ).join('');
+}
+
+function toggleDecSelect(cb) {
+  if (cb.checked) decisionSelectedIds.add(parseInt(cb.value));
+  else decisionSelectedIds.delete(parseInt(cb.value));
+  updateDecBatchBar();
+}
+function updateDecBatchBar() {
+  const bar = document.getElementById('batchDecisionBar');
+  if (decisionSelectedIds.size > 0) { bar.style.display = 'flex'; document.getElementById('batchDecCount').textContent = decisionSelectedIds.size; }
+  else bar.style.display = 'none';
+}
+
+async function batchCustomerDecision(decision) {
+  const labels = { resend: '重发', refurbish: '翻新', dispose: '销毁' };
+  if (!confirm('确定对选中的 ' + decisionSelectedIds.size + ' 项执行「' + labels[decision] + '」？')) return;
+  await apiFetch('/api/returns/batch/decision', { method: 'POST', body: JSON.stringify({ ids: [...decisionSelectedIds], decision }) });
+  loadDecisions();
 }
 
 async function makeDecision(id, decision) {
   const labels = { resend: '重新发货', refurbish: '翻新处理', dispose: '销毁' };
-  if (!confirm(`确定要选择「${labels[decision]}」吗？`)) return;
+  if (!confirm('确定要选择「' + labels[decision] + '」吗？')) return;
   const notes = decision === 'refurbish' ? prompt('请描述需要翻新的问题（可选）：') : null;
-  await apiFetch('/api/returns/' + id + '/decision', {
-    method: 'PATCH',
-    body: JSON.stringify({ decision, notes })
-  });
+  await apiFetch('/api/returns/' + id + '/decision', { method: 'PATCH', body: JSON.stringify({ decision: decision, notes: notes }) });
   loadDecisions();
 }
 
@@ -337,23 +376,12 @@ async function loadUnclaimed() {
   const data = await res.json();
   const el = document.getElementById('unclaimedList');
   if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无无主货品</div>'; return; }
-  el.innerHTML = data.data.map(r => {
+  el.innerHTML = data.data.map(function(r) {
     const photos = JSON.parse(r.photos || '[]');
-    return `
-      <div class="unclaimed-card">
-        <div style="display:flex;justify-content:space-between;align-items:start">
-          <div>
-            <strong>${r.tracking_number}</strong><br>
-            <span style="font-size:13px;color:#888">SKU: ${r.sku || '-'} · ${r.condition || '-'} · ${r.created_date}</span>
-          </div>
-          <button class="btn btn-primary" onclick="claimItem(${r.id})">认领</button>
-        </div>
-        ${photos.length ? `<div class="unclaimed-photos">${photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
-      </div>
-    `;
+    return '<div class="unclaimed-card"><div style="display:flex;justify-content:space-between;align-items:start"><div><strong>' + r.tracking_number + '</strong><br><span style="font-size:13px;color:#888">SKU: ' + (r.sku || '-') + ' · ' + (r.condition || '-') + ' · ' + r.created_date + '</span></div><button class="btn btn-primary" onclick="claimItem(' + r.id + ')">认领</button></div>' +
+    (photos.length ? '<div class="unclaimed-photos">' + photos.map(function(p) { return '<img src="' + p + '">'; }).join('') + '</div>' : '') + '</div>';
   }).join('');
 }
-
 async function claimItem(id) {
   if (!confirm('确定认领这个货品吗？')) return;
   await apiFetch('/api/unclaimed/' + id + '/claim', { method: 'POST' });
@@ -366,24 +394,11 @@ async function loadRepairs() {
   const data = await res.json();
   const el = document.getElementById('repairsList');
   if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无维修工单</div>'; return; }
-  const repairStatusLabels = { pending: '待处理', in_progress: '维修中', done: '已完成' };
-  el.innerHTML = data.data.map(r => `
-    <div class="card" style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <strong>工单 #${r.id}</strong> · ${r.tracking_number}
-          <div style="font-size:13px;color:#888;margin-top:4px">SKU: ${r.sku || '-'}</div>
-        </div>
-        ${statusBadge(r.status === 'pending' ? 'pending' : r.status === 'in_progress' ? 'in_repair' : 'done')}
-      </div>
-      <div style="margin-top:8px;font-size:13px">
-        <p><strong>问题:</strong> ${r.issue || '-'}</p>
-        <p><strong>诊断:</strong> ${r.diagnosis || '-'}</p>
-        <p><strong>进度:</strong> ${r.pct}%</p>
-        <div class="progress-bar"><div class="progress-fill" style="width:${r.pct}%"></div></div>
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = data.data.map(r =>
+    '<div class="card" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center"><div><strong>工单 #' + r.id + '</strong> · ' + r.tracking_number + '<div style="font-size:13px;color:#888;margin-top:4px">SKU: ' + (r.sku || '-') + '</div></div>' +
+    statusBadge(r.status === 'pending' ? 'pending' : r.status === 'in_progress' ? 'in_repair' : 'done') +
+    '</div><div style="margin-top:8px;font-size:13px"><p><strong>问题:</strong> ' + (r.issue || '-') + '</p><p><strong>诊断:</strong> ' + (r.diagnosis || '-') + '</p><p><strong>进度:</strong> ' + r.pct + '%</p><div class="progress-bar"><div class="progress-fill" style="width:' + r.pct + '%"></div></div></div></div>'
+  ).join('');
 }
 
 // ===== 货品管理 =====
@@ -391,36 +406,18 @@ async function loadProducts() {
   const res = await apiFetch('/api/products');
   const data = await res.json();
   document.getElementById('productsList').innerHTML = data.data.length
-    ? data.data.map(p => `
-      <tr>
-        <td>${p.sku}</td><td>${p.name || '-'}</td><td>${p.spec || '-'}</td>
-        <td>${p.created_at}</td>
-        <td><button class="btn btn-danger" onclick="deleteProduct(${p.id})" style="font-size:12px;padding:4px 10px">删除</button></td>
-      </tr>
-    `).join('')
+    ? data.data.map(p => '<tr><td>' + p.sku + '</td><td>' + (p.name || '-') + '</td><td>' + (p.spec || '-') + '</td><td>' + p.created_at + '</td><td><button class="btn btn-danger btn-sm" onclick="deleteProduct(' + p.id + ')">删除</button></td></tr>').join('')
     : '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">暂无SKU记录，点击上方按钮添加</td></tr>';
 }
-
 function openProductForm() { document.getElementById('addProductForm').style.display = 'block'; }
-function closeProductForm() {
-  document.getElementById('addProductForm').style.display = 'none';
-  document.getElementById('pSku').value = '';
-  document.getElementById('pName').value = '';
-  document.getElementById('pSpec').value = '';
-}
-
+function closeProductForm() { document.getElementById('addProductForm').style.display = 'none'; document.getElementById('pSku').value = ''; document.getElementById('pName').value = ''; document.getElementById('pSpec').value = ''; }
 async function saveProduct() {
   const sku = document.getElementById('pSku').value.trim();
   if (!sku) { alert('请输入SKU编码'); return; }
-  const res = await apiFetch('/api/products', {
-    method: 'POST',
-    body: JSON.stringify({ sku, name: document.getElementById('pName').value, spec: document.getElementById('pSpec').value })
-  });
+  const res = await apiFetch('/api/products', { method: 'POST', body: JSON.stringify({ sku: sku, name: document.getElementById('pName').value, spec: document.getElementById('pSpec').value }) });
   if (!res.ok) { const d = await res.json(); alert(d.error); return; }
-  closeProductForm();
-  loadProducts();
+  closeProductForm(); loadProducts();
 }
-
 async function deleteProduct(id) {
   if (!confirm('确定删除这个SKU吗？')) return;
   await apiFetch('/api/products/' + id, { method: 'DELETE' });
@@ -429,6 +426,8 @@ async function deleteProduct(id) {
 
 // Init
 loadMyReturns();
+loadNotifCount();
+setInterval(loadNotifCount, 60000);
 </script>
 </body>
 </html>

@@ -6,10 +6,7 @@
 <title>PDA扫描 - WMS</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f5f5f5; min-height: 100vh;
-}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
 .header {
   background: #1a1a2e; color: #fff; padding: 12px 16px;
   display: flex; justify-content: space-between; align-items: center;
@@ -20,12 +17,8 @@ body {
 
 .container { padding: 16px; max-width: 480px; margin: 0 auto; }
 
-/* Steps */
 .steps { display: flex; gap: 4px; margin-bottom: 20px; }
-.steps .step {
-  flex: 1; text-align: center; padding: 10px 4px; border-radius: 8px;
-  background: #e0e0e0; color: #888; font-size: 13px; font-weight: 600;
-}
+.steps .step { flex: 1; text-align: center; padding: 10px 4px; border-radius: 8px; background: #e0e0e0; color: #888; font-size: 13px; font-weight: 600; }
 .steps .step.active { background: #667eea; color: #fff; }
 .steps .step.done { background: #27ae60; color: #fff; }
 
@@ -40,43 +33,27 @@ body {
 }
 .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
 
-.carrier-tag {
-  display: inline-block; padding: 4px 12px; background: #e3f2fd; color: #1976d2;
-  border-radius: 20px; font-size: 14px; font-weight: 500; margin-top: 8px;
-}
+.carrier-tag { display: inline-block; padding: 4px 12px; background: #e3f2fd; color: #1976d2; border-radius: 20px; font-size: 14px; font-weight: 500; margin-top: 8px; }
+.match-tag { display: inline-block; padding: 4px 12px; background: #e8f5e9; color: #2e7d32; border-radius: 20px; font-size: 14px; font-weight: 500; margin-top: 8px; margin-left: 4px; }
 
-/* Photo */
-.photo-area {
-  border: 2px dashed #ccc; border-radius: 12px; padding: 32px; text-align: center;
-  cursor: pointer; transition: border-color .2s;
-}
+.photo-area { border: 2px dashed #ccc; border-radius: 12px; padding: 32px; text-align: center; cursor: pointer; }
 .photo-area:active { border-color: #667eea; }
 .photo-area p { color: #888; font-size: 15px; margin-top: 8px; }
 .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
 .photo-grid img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 
-/* Condition */
 .condition-list { display: flex; flex-direction: column; gap: 8px; }
-.condition-item {
-  padding: 16px; border: 2px solid #e0e0e0; border-radius: 10px;
-  font-size: 16px; font-weight: 500; text-align: center; cursor: pointer;
-  transition: all .2s;
-}
+.condition-item { padding: 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-weight: 500; text-align: center; cursor: pointer; }
 .condition-item.selected { border-color: #667eea; background: #f0f3ff; color: #667eea; }
 
-/* Summary */
 .summary-card { background: #fff; border-radius: 12px; padding: 16px; }
 .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
 .summary-row:last-child { border: none; }
 .summary-label { color: #888; }
 .summary-value { font-weight: 500; color: #333; }
 
-/* Buttons */
 .btn-actions { display: flex; gap: 8px; margin-top: 20px; }
-.btn-lg {
-  flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 16px;
-  font-weight: 600; cursor: pointer;
-}
+.btn-lg { flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
 .btn-lg.primary { background: #667eea; color: #fff; }
 .btn-lg.secondary { background: #e0e0e0; color: #555; }
 .btn-lg.success { background: #27ae60; color: #fff; }
@@ -86,6 +63,12 @@ body {
 .success-screen .icon { font-size: 64px; margin-bottom: 16px; }
 .success-screen h2 { font-size: 20px; margin-bottom: 8px; color: #333; }
 .success-screen p { color: #888; font-size: 14px; margin-bottom: 24px; }
+
+.ocr-btn { display: block; width: 100%; padding: 14px; background: #f0f3ff; border: 2px solid #667eea; border-radius: 10px; color: #667eea; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px; text-align: center; }
+.ocr-btn:active { opacity: 0.8; }
+.ocr-status { font-size: 13px; color: #888; text-align: center; margin: 8px 0; }
+.ocr-found { background: #e8f5e9; padding: 12px; border-radius: 8px; margin-top: 8px; }
+.ocr-found p { font-size: 15px; color: #2e7d32; font-weight: 600; cursor: pointer; padding: 4px 0; }
 </style>
 </head>
 <body>
@@ -103,30 +86,30 @@ body {
     <div class="step" id="ps4">4.确认</div>
   </div>
 
-  <!-- Step 1: 快递信息 -->
+  <!-- Step 1 -->
   <div class="step-content active" id="pdaStep1">
+    <div class="form-group">
+      <label>仓库</label>
+      <select id="pdaWarehouse"></select>
+    </div>
+    <button class="ocr-btn" onclick="startOcr()">拍照识别快递单号 (OCR)</button>
+    <div id="pdaOcrStatus" class="ocr-status"></div>
+    <div id="pdaOcrResult"></div>
+    <input type="file" id="pdaOcrInput" accept="image/*" capture="environment" style="display:none">
     <div class="form-group">
       <label>快递单号</label>
       <input type="text" id="pdaTracking" placeholder="扫描或输入快递单号" inputmode="text" autofocus>
       <div id="pdaCarrierTag"></div>
     </div>
-    <div class="form-group">
-      <label>SKU</label>
-      <input type="text" id="pdaSku" placeholder="输入SKU编码" inputmode="text">
-    </div>
-    <div class="form-group">
-      <label>托盘号</label>
-      <input type="text" id="pdaPallet" placeholder="输入托盘号" inputmode="text">
-    </div>
-    <div class="btn-actions">
-      <button class="btn-lg primary" onclick="pdaNext()">下一步</button>
-    </div>
+    <div class="form-group"><label>SKU</label><input type="text" id="pdaSku" placeholder="输入SKU编码" inputmode="text"></div>
+    <div class="form-group"><label>托盘号</label><input type="text" id="pdaPallet" placeholder="输入托盘号" inputmode="text"></div>
+    <div class="btn-actions"><button class="btn-lg primary" onclick="pdaNext()">下一步</button></div>
   </div>
 
-  <!-- Step 2: 拍照 -->
+  <!-- Step 2 -->
   <div class="step-content" id="pdaStep2">
     <div class="photo-area" onclick="document.getElementById('pdaPhotoInput').click()">
-      <p style="font-size:32px">📷</p>
+      <p style="font-size:32px">&#128247;</p>
       <p>点击拍照或选择图片</p>
     </div>
     <input type="file" id="pdaPhotoInput" accept="image/*" capture="environment" multiple style="display:none">
@@ -137,7 +120,7 @@ body {
     </div>
   </div>
 
-  <!-- Step 3: 外观评级 -->
+  <!-- Step 3 -->
   <div class="step-content" id="pdaStep3">
     <div class="condition-list">
       <div class="condition-item" data-val="完好" onclick="pdaSelectCondition(this)">完好</div>
@@ -155,7 +138,7 @@ body {
     </div>
   </div>
 
-  <!-- Step 4: 确认 -->
+  <!-- Step 4 -->
   <div class="step-content" id="pdaStep4">
     <div class="summary-card" id="pdaSummary"></div>
     <div class="btn-actions">
@@ -164,7 +147,7 @@ body {
     </div>
   </div>
 
-  <!-- 成功页面 -->
+  <!-- 成功 -->
   <div class="step-content" id="pdaSuccess">
     <div class="success-screen">
       <div class="icon">&#10004;</div>
@@ -180,9 +163,7 @@ const API = window.location.origin;
 const token = localStorage.getItem('token');
 if (!token) window.location.href = '/login.html';
 
-let pdaStep = 1;
-let pdaPhotos = [];
-let pdaCondition = '';
+let pdaStep = 1, pdaPhotos = [], pdaCondition = '';
 
 function detectCarrier(t) {
   if (!t) return '';
@@ -194,57 +175,46 @@ function detectCarrier(t) {
   return '';
 }
 
-document.getElementById('pdaTracking').addEventListener('input', (e) => {
+// Load warehouses
+(async () => {
+  const res = await fetch(API + '/api/warehouses', { headers: { 'Authorization': 'Bearer ' + token } });
+  const data = await res.json();
+  document.getElementById('pdaWarehouse').innerHTML = data.data.map(w => '<option value="' + w.id + '">' + w.name + '</option>').join('');
+})();
+
+document.getElementById('pdaTracking').addEventListener('input', e => {
   const c = detectCarrier(e.target.value.trim());
-  document.getElementById('pdaCarrierTag').innerHTML = c ? `<span class="carrier-tag">${c}</span>` : '';
+  document.getElementById('pdaCarrierTag').innerHTML = c ? '<span class="carrier-tag">' + c + '</span>' : '';
 });
-
-document.getElementById('pdaPhotoInput').addEventListener('change', (e) => {
+document.getElementById('pdaPhotoInput').addEventListener('change', e => {
   pdaPhotos = Array.from(e.target.files);
-  const grid = document.getElementById('pdaPhotoGrid');
-  grid.innerHTML = '';
-  pdaPhotos.forEach(f => {
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(f);
-    grid.appendChild(img);
-  });
+  const grid = document.getElementById('pdaPhotoGrid'); grid.innerHTML = '';
+  pdaPhotos.forEach(f => { const img = document.createElement('img'); img.src = URL.createObjectURL(f); grid.appendChild(img); });
 });
 
-function pdaSelectCondition(el) {
-  document.querySelectorAll('.condition-item').forEach(x => x.classList.remove('selected'));
-  el.classList.add('selected');
-  pdaCondition = el.dataset.val;
-}
-
+function pdaSelectCondition(el) { document.querySelectorAll('.condition-item').forEach(x => x.classList.remove('selected')); el.classList.add('selected'); pdaCondition = el.dataset.val; }
 function updatePdaUI() {
-  for (let i = 1; i <= 4; i++) {
-    document.getElementById('pdaStep' + i).classList.toggle('active', i === pdaStep);
-    const s = document.getElementById('ps' + i);
-    s.className = 'step' + (i === pdaStep ? ' active' : i < pdaStep ? ' done' : '');
-  }
+  for (let i = 1; i <= 4; i++) { document.getElementById('pdaStep' + i).classList.toggle('active', i === pdaStep); document.getElementById('ps' + i).className = 'step' + (i === pdaStep ? ' active' : i < pdaStep ? ' done' : ''); }
   document.getElementById('pdaSuccess').classList.remove('active');
 }
-
 function pdaBack() { if (pdaStep > 1) { pdaStep--; updatePdaUI(); } }
-
 function pdaNext() {
   if (pdaStep === 1) {
     if (!document.getElementById('pdaTracking').value.trim()) { alert('请输入快递单号'); return; }
     pdaStep = 2;
-  } else if (pdaStep === 2) {
-    pdaStep = 3;
-  } else if (pdaStep === 3) {
+  } else if (pdaStep === 2) { pdaStep = 3; } else if (pdaStep === 3) {
     const tracking = document.getElementById('pdaTracking').value.trim();
-    const carrier = detectCarrier(tracking);
-    document.getElementById('pdaSummary').innerHTML = `
-      <div class="summary-row"><span class="summary-label">快递单号</span><span class="summary-value">${tracking}</span></div>
-      <div class="summary-row"><span class="summary-label">快递公司</span><span class="summary-value">${carrier || '未识别'}</span></div>
-      <div class="summary-row"><span class="summary-label">SKU</span><span class="summary-value">${document.getElementById('pdaSku').value || '-'}</span></div>
-      <div class="summary-row"><span class="summary-label">托盘号</span><span class="summary-value">${document.getElementById('pdaPallet').value || '-'}</span></div>
-      <div class="summary-row"><span class="summary-label">照片</span><span class="summary-value">${pdaPhotos.length} 张</span></div>
-      <div class="summary-row"><span class="summary-label">外观</span><span class="summary-value">${pdaCondition || '未选择'}</span></div>
-      <div class="summary-row"><span class="summary-label">备注</span><span class="summary-value">${document.getElementById('pdaNotes').value || '-'}</span></div>
-    `;
+    const whSel = document.getElementById('pdaWarehouse');
+    const whName = whSel.options[whSel.selectedIndex] ? whSel.options[whSel.selectedIndex].text : '-';
+    document.getElementById('pdaSummary').innerHTML =
+      '<div class="summary-row"><span class="summary-label">仓库</span><span class="summary-value">' + whName + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">快递单号</span><span class="summary-value">' + tracking + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">快递公司</span><span class="summary-value">' + (detectCarrier(tracking) || '未识别') + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">SKU</span><span class="summary-value">' + (document.getElementById('pdaSku').value || '-') + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">托盘号</span><span class="summary-value">' + (document.getElementById('pdaPallet').value || '-') + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">照片</span><span class="summary-value">' + pdaPhotos.length + ' 张</span></div>' +
+      '<div class="summary-row"><span class="summary-label">外观</span><span class="summary-value">' + (pdaCondition || '未选择') + '</span></div>' +
+      '<div class="summary-row"><span class="summary-label">备注</span><span class="summary-value">' + (document.getElementById('pdaNotes').value || '-') + '</span></div>';
     pdaStep = 4;
   }
   updatePdaUI();
@@ -252,9 +222,7 @@ function pdaNext() {
 
 async function pdaSubmit() {
   const btn = document.getElementById('pdaSubmitBtn');
-  btn.disabled = true;
-  btn.textContent = '提交中...';
-
+  btn.disabled = true; btn.textContent = '提交中...';
   const formData = new FormData();
   formData.append('tracking_number', document.getElementById('pdaTracking').value.trim());
   formData.append('carrier', detectCarrier(document.getElementById('pdaTracking').value.trim()));
@@ -262,40 +230,60 @@ async function pdaSubmit() {
   formData.append('pallet_number', document.getElementById('pdaPallet').value);
   formData.append('condition', pdaCondition);
   formData.append('notes', document.getElementById('pdaNotes').value);
+  formData.append('warehouse_id', document.getElementById('pdaWarehouse').value);
   pdaPhotos.forEach(f => formData.append('photos', f));
-
   try {
-    const res = await fetch(API + '/api/returns', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: formData
-    });
+    const res = await fetch(API + '/api/returns', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
-
-    // Show success
     document.querySelectorAll('.step-content').forEach(x => x.classList.remove('active'));
     document.getElementById('pdaSuccess').classList.add('active');
-    document.getElementById('pdaSuccessMsg').textContent = `退货单ID: ${data.id}`;
-  } catch (e) {
-    alert('提交失败: ' + e.message);
-  }
-  btn.disabled = false;
-  btn.textContent = '确认入库';
+    let msg = '退货单ID: ' + data.id;
+    if (data.matchedBy) msg += ' (已自动匹配货主)';
+    document.getElementById('pdaSuccessMsg').textContent = msg;
+  } catch (e) { alert('提交失败: ' + e.message); }
+  btn.disabled = false; btn.textContent = '确认入库';
 }
 
 function pdaReset() {
-  pdaStep = 1;
-  pdaPhotos = [];
-  pdaCondition = '';
+  pdaStep = 1; pdaPhotos = []; pdaCondition = '';
   document.getElementById('pdaTracking').value = '';
   document.getElementById('pdaSku').value = '';
   document.getElementById('pdaPallet').value = '';
   document.getElementById('pdaNotes').value = '';
   document.getElementById('pdaPhotoGrid').innerHTML = '';
   document.getElementById('pdaCarrierTag').innerHTML = '';
+  document.getElementById('pdaOcrResult').innerHTML = '';
+  document.getElementById('pdaOcrStatus').textContent = '';
   document.querySelectorAll('.condition-item').forEach(x => x.classList.remove('selected'));
   updatePdaUI();
+}
+
+// OCR
+function startOcr() { document.getElementById('pdaOcrInput').click(); }
+document.getElementById('pdaOcrInput').addEventListener('change', async (e) => {
+  if (!e.target.files.length) return;
+  document.getElementById('pdaOcrStatus').textContent = '正在识别中...';
+  document.getElementById('pdaOcrResult').innerHTML = '';
+  const formData = new FormData();
+  formData.append('image', e.target.files[0]);
+  try {
+    const res = await fetch(API + '/api/ocr', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: formData });
+    const data = await res.json();
+    document.getElementById('pdaOcrStatus').textContent = '';
+    if (data.trackingNumbers && data.trackingNumbers.length > 0) {
+      document.getElementById('pdaOcrResult').innerHTML = '<div class="ocr-found">' + data.trackingNumbers.map(t => '<p onclick="useOcrNum(\'' + t + '\')">' + t + ' (点击使用)</p>').join('') + '</div>';
+    } else {
+      document.getElementById('pdaOcrResult').innerHTML = '<div style="color:#888;font-size:13px;padding:8px">未识别到快递单号</div>';
+    }
+  } catch (err) {
+    document.getElementById('pdaOcrStatus').textContent = '识别失败';
+  }
+});
+function useOcrNum(num) {
+  document.getElementById('pdaTracking').value = num;
+  document.getElementById('pdaCarrierTag').innerHTML = detectCarrier(num) ? '<span class="carrier-tag">' + detectCarrier(num) + '</span>' : '';
+  document.getElementById('pdaOcrResult').innerHTML = '';
 }
 
 function logout() { localStorage.clear(); window.location.href = '/login.html'; }
