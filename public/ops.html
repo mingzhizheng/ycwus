@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仓库运营后台 - WMS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+.topbar {
+  background: #1a1a2e; color: #fff; padding: 0 24px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+}
+.topbar h1 { font-size: 18px; font-weight: 600; }
+.topbar .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.topbar .btn-logout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+.sidebar {
+  position: fixed; top: 56px; left: 0; bottom: 0; width: 200px; background: #16213e;
+  padding-top: 16px; overflow-y: auto;
+}
+.sidebar a {
+  display: block; padding: 12px 24px; color: #aab; text-decoration: none; font-size: 14px;
+  transition: all .2s;
+}
+.sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.08); color: #fff; }
+
+.main { margin-left: 200px; margin-top: 56px; padding: 24px; }
+
+/* Dashboard */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: #333; }
+
+/* Tables */
+.card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-header h2 { font-size: 16px; color: #333; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
+td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
+tr:hover td { background: #f8f9ff; }
+
+/* Buttons */
+.btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .2s; }
+.btn-primary { background: #667eea; color: #fff; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
+.btn:hover { opacity: 0.85; }
+
+/* Status badges */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+}
+.badge-received { background: #e3f2fd; color: #1976d2; }
+.badge-unclaimed { background: #fff3e0; color: #e65100; }
+.badge-pending { background: #fce4ec; color: #c62828; }
+.badge-resend { background: #e8f5e9; color: #2e7d32; }
+.badge-refurbish { background: #f3e5f5; color: #7b1fa2; }
+.badge-in_repair { background: #fff8e1; color: #f57f17; }
+.badge-done { background: #e8f5e9; color: #1b5e20; }
+.badge-dispose { background: #efebe9; color: #4e342e; }
+
+/* Wizard */
+.wizard-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
+}
+.wizard-overlay.show { display: flex; }
+.wizard-box {
+  background: #fff; border-radius: 16px; padding: 32px; width: 560px; max-height: 90vh; overflow-y: auto;
+}
+.wizard-box h2 { margin-bottom: 24px; font-size: 18px; }
+.wizard-steps { display: flex; gap: 8px; margin-bottom: 24px; }
+.wizard-steps .step {
+  flex: 1; text-align: center; padding: 8px; border-radius: 6px;
+  background: #f0f0f0; color: #888; font-size: 12px; font-weight: 500;
+}
+.wizard-steps .step.active { background: #667eea; color: #fff; }
+.wizard-steps .step.done { background: #27ae60; color: #fff; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #555; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+
+.photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.photo-preview img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #eee; }
+
+.condition-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.condition-option {
+  padding: 12px; border: 2px solid #eee; border-radius: 8px; cursor: pointer; text-align: center;
+  transition: all .2s; font-size: 13px;
+}
+.condition-option:hover { border-color: #667eea; }
+.condition-option.selected { border-color: #667eea; background: #f0f3ff; }
+
+.wizard-actions { display: flex; justify-content: space-between; margin-top: 24px; }
+
+/* Search */
+.search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.search-bar input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+.search-bar select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+
+/* User modal */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box { background: #fff; border-radius: 16px; padding: 32px; width: 480px; }
+.modal-box h2 { margin-bottom: 20px; font-size: 18px; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>海外仓退货管理系统</h1>
+  <div class="user-info">
+    <span id="userDisplay"></span>
+    <button class="btn-logout" onclick="logout()">退出登录</button>
+  </div>
+</div>
+
+<div class="sidebar">
+  <a href="#" data-page="dashboard" class="active">仪表盘</a>
+  <a href="#" data-page="returns">入库管理</a>
+  <a href="#" data-page="repair">维修管理</a>
+  <a href="#" id="navUsers" data-page="users" class="hidden">用户管理</a>
+</div>
+
+<div class="main">
+  <!-- Dashboard Page -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="label">今日入库</div><div class="value" id="statToday">0</div></div>
+      <div class="stat-card"><div class="label">待处理</div><div class="value" id="statPending">0</div></div>
+      <div class="stat-card"><div class="label">维修中</div><div class="value" id="statRepair">0</div></div>
+      <div class="stat-card"><div class="label">总记录</div><div class="value" id="statTotal">0</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h2>最近入库</h2>
+        <button class="btn btn-primary" onclick="openWizard()">+ 收货入库</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>状态</th><th>入库时间</th></tr></thead>
+        <tbody id="recentReturns"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Returns Page -->
+  <div class="page" id="page-returns">
+    <div class="card">
+      <div class="card-header">
+        <h2>退货列表</h2>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="openWizard()">+ 收货入库</button>
+          <button class="btn btn-outline" onclick="exportExcel()">导出 Excel</button>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchReturns" placeholder="搜索单号 / SKU / 托盘号..." onkeyup="if(event.key==='Enter')loadReturns()">
+        <select id="filterStatus" onchange="loadReturns()">
+          <option value="">全部状态</option>
+          <option value="received">已收货</option>
+          <option value="unclaimed">无主货</option>
+          <option value="pending">待决策</option>
+          <option value="resend">重发</option>
+          <option value="refurbish">翻新</option>
+          <option value="in_repair">维修中</option>
+          <option value="done">已完成</option>
+          <option value="dispose">已销毁</option>
+        </select>
+        <button class="btn btn-primary" onclick="loadReturns()">搜索</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>快递单号</th><th>快递公司</th><th>SKU</th><th>外观</th><th>托盘号</th><th>货主</th><th>状态</th><th>入库时间</th></tr></thead>
+        <tbody id="returnsList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Repair Page -->
+  <div class="page" id="page-repair">
+    <div class="card">
+      <div class="card-header"><h2>维修工单</h2></div>
+      <table>
+        <thead><tr><th>工单ID</th><th>快递单号</th><th>SKU</th><th>问题描述</th><th>诊断</th><th>进度</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="repairList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users Page -->
+  <div class="page" id="page-users">
+    <div class="card">
+      <div class="card-header">
+        <h2>用户管理</h2>
+        <button class="btn btn-primary" onclick="openUserModal()">+ 新增用户</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>显示名</th><th>货主编码</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody id="usersList"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Receiving Wizard -->
+<div class="wizard-overlay" id="wizardOverlay">
+  <div class="wizard-box">
+    <h2>收货入库</h2>
+    <div class="wizard-steps">
+      <div class="step active" id="ws1">1. 快递信息</div>
+      <div class="step" id="ws2">2. 拍照</div>
+      <div class="step" id="ws3">3. 外观评级</div>
+      <div class="step" id="ws4">4. 确认</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div id="wizStep1">
+      <div class="form-group">
+        <label>快递单号 *</label>
+        <input type="text" id="wizTracking" placeholder="输入或扫描快递单号" autofocus>
+      </div>
+      <div class="form-group">
+        <label>快递公司</label>
+        <input type="text" id="wizCarrier" placeholder="自动识别" readonly>
+      </div>
+      <div class="form-group">
+        <label>SKU</label>
+        <input type="text" id="wizSku" placeholder="输入SKU编码">
+      </div>
+      <div class="form-group">
+        <label>托盘号</label>
+        <input type="text" id="wizPallet" placeholder="输入托盘号">
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="wizStep2" style="display:none">
+      <div class="form-group">
+        <label>拍照上传</label>
+        <input type="file" id="wizPhotos" accept="image/*" capture="environment" multiple>
+        <div class="photo-preview" id="photoPreview"></div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="wizStep3" style="display:none">
+      <div class="form-group">
+        <label>外观状态评级</label>
+        <div class="condition-options">
+          <div class="condition-option" data-value="完好" onclick="selectCondition(this)">完好</div>
+          <div class="condition-option" data-value="轻微损坏" onclick="selectCondition(this)">轻微损坏</div>
+          <div class="condition-option" data-value="严重损坏" onclick="selectCondition(this)">严重损坏</div>
+          <div class="condition-option" data-value="丢失配件" onclick="selectCondition(this)">丢失配件</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>备注</label>
+        <textarea id="wizNotes" rows="3" placeholder="补充说明..."></textarea>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div id="wizStep4" style="display:none">
+      <h3 style="margin-bottom:16px">确认入库信息</h3>
+      <div id="wizSummary" style="font-size:14px;line-height:1.8"></div>
+    </div>
+
+    <div class="wizard-actions">
+      <button class="btn btn-outline" id="wizBtnBack" onclick="wizardBack()" style="visibility:hidden">上一步</button>
+      <button class="btn btn-outline" onclick="closeWizard()">取消</button>
+      <button class="btn btn-primary" id="wizBtnNext" onclick="wizardNext()">下一步</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box">
+    <h2 id="userModalTitle">新增用户</h2>
+    <input type="hidden" id="editUserId">
+    <div class="form-group">
+      <label>用户名</label>
+      <input type="text" id="uUsername" placeholder="用户名">
+    </div>
+    <div class="form-group">
+      <label>密码</label>
+      <input type="password" id="uPassword" placeholder="密码">
+    </div>
+    <div class="form-group">
+      <label>显示名</label>
+      <input type="text" id="uDisplayName" placeholder="显示名称">
+    </div>
+    <div class="form-group">
+      <label>角色</label>
+      <select id="uRole">
+        <option value="staff">仓库员工 (staff)</option>
+        <option value="admin">管理员 (admin)</option>
+        <option value="customer">货主 (customer)</option>
+        <option value="repair">维修人员 (repair)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>货主编码 (仅货主角色)</label>
+      <input type="text" id="uCustomerCode" placeholder="货主编码">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeUserModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveUser()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Repair Update Modal -->
+<div class="modal-overlay" id="repairModal">
+  <div class="modal-box">
+    <h2>更新维修进度</h2>
+    <input type="hidden" id="repairId">
+    <div class="form-group">
+      <label>状态</label>
+      <select id="repairStatus">
+        <option value="pending">待处理</option>
+        <option value="in_progress">维修中</option>
+        <option value="done">已完成</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>诊断结果</label>
+      <textarea id="repairDiagnosis" rows="3" placeholder="诊断结果..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>完成进度 (%)</label>
+      <input type="number" id="repairPct" min="0" max="100" value="0">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-outline" onclick="closeRepairModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveRepair()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+if (!token) { window.location.href = '/login.html'; }
+if (user.role === 'customer') { window.location.href = '/portal.html'; }
+
+document.getElementById('userDisplay').textContent = user.display_name || user.username;
+if (user.role === 'admin') document.getElementById('navUsers').classList.remove('hidden');
+
+// Headers helper
+function headers(extra = {}) {
+  return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...extra };
+}
+
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(API + url, { headers: headers(), ...opts });
+  if (res.status === 401) { localStorage.clear(); window.location.href = '/login.html'; }
+  return res;
+}
+
+// Navigation
+document.querySelectorAll('.sidebar a').forEach(a => {
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.sidebar a').forEach(x => x.classList.remove('active'));
+    a.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + a.dataset.page).classList.add('active');
+    if (a.dataset.page === 'dashboard') loadDashboard();
+    if (a.dataset.page === 'returns') loadReturns();
+    if (a.dataset.page === 'repair') loadRepairOrders();
+    if (a.dataset.page === 'users') loadUsers();
+  });
+});
+
+function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+
+// Status badge helper
+function statusBadge(s) {
+  const labels = { received: '已收货', unclaimed: '无主货', pending: '待决策', resend: '重发', refurbish: '翻新', in_repair: '维修中', done: '已完成', dispose: '已销毁' };
+  return `<span class="badge badge-${s}">${labels[s] || s}</span>`;
+}
+
+// ===== Dashboard =====
+async function loadDashboard() {
+  try {
+    const res = await apiFetch('/api/stats');
+    const data = await res.json();
+    document.getElementById('statToday').textContent = data.todayReceived;
+    document.getElementById('statPending').textContent = data.pendingCount;
+    document.getElementById('statRepair').textContent = data.inRepairCount;
+    document.getElementById('statTotal').textContent = data.totalCount;
+
+    const res2 = await apiFetch('/api/returns?limit=10');
+    const list = await res2.json();
+    document.getElementById('recentReturns').innerHTML = list.data.map(r => `
+      <tr>
+        <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.carrier || '-'}</td>
+        <td>${r.sku || '-'}</td><td>${statusBadge(r.status)}</td><td>${r.created_date}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); }
+}
+
+// ===== Returns =====
+async function loadReturns() {
+  const search = document.getElementById('searchReturns').value;
+  const status = document.getElementById('filterStatus').value;
+  let url = '/api/returns?limit=100';
+  if (search) url += '&search=' + encodeURIComponent(search);
+  if (status) url += '&status=' + encodeURIComponent(status);
+
+  const res = await apiFetch(url);
+  const data = await res.json();
+  document.getElementById('returnsList').innerHTML = data.data.map(r => `
+    <tr>
+      <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.carrier || '-'}</td>
+      <td>${r.sku || '-'}</td><td>${r.condition || '-'}</td><td>${r.pallet_number || '-'}</td>
+      <td>${r.customer_name || '-'}</td><td>${statusBadge(r.status)}</td><td>${r.created_date}</td>
+    </tr>
+  `).join('');
+}
+
+// ===== Repair =====
+async function loadRepairOrders() {
+  const res = await apiFetch('/api/repair');
+  const data = await res.json();
+  document.getElementById('repairList').innerHTML = data.data.map(r => `
+    <tr>
+      <td>${r.id}</td><td>${r.tracking_number}</td><td>${r.sku || '-'}</td>
+      <td>${r.issue || '-'}</td><td>${r.diagnosis || '-'}</td>
+      <td><div style="background:#eee;border-radius:4px;height:8px;"><div style="background:#27ae60;width:${r.pct}%;height:100%;border-radius:4px;"></div></div><span style="font-size:12px">${r.pct}%</span></td>
+      <td>${statusBadge(r.status)}</td>
+      <td><button class="btn btn-outline" onclick="openRepairModal(${r.id},'${r.status}','${(r.diagnosis||'').replace(/'/g,"\\'")}',${r.pct})">更新</button></td>
+    </tr>
+  `).join('');
+}
+
+function openRepairModal(id, status, diagnosis, pct) {
+  document.getElementById('repairId').value = id;
+  document.getElementById('repairStatus').value = status;
+  document.getElementById('repairDiagnosis').value = diagnosis;
+  document.getElementById('repairPct').value = pct;
+  document.getElementById('repairModal').classList.add('show');
+}
+function closeRepairModal() { document.getElementById('repairModal').classList.remove('show'); }
+
+async function saveRepair() {
+  const id = document.getElementById('repairId').value;
+  await apiFetch('/api/repair/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      status: document.getElementById('repairStatus').value,
+      diagnosis: document.getElementById('repairDiagnosis').value,
+      pct: parseInt(document.getElementById('repairPct').value)
+    })
+  });
+  closeRepairModal();
+  loadRepairOrders();
+}
+
+// ===== Users =====
+async function loadUsers() {
+  const res = await apiFetch('/api/users');
+  const data = await res.json();
+  const roleLabels = { admin: '管理员', staff: '员工', customer: '货主', repair: '维修' };
+  document.getElementById('usersList').innerHTML = data.data.map(u => `
+    <tr>
+      <td>${u.id}</td><td>${u.username}</td><td>${roleLabels[u.role] || u.role}</td>
+      <td>${u.display_name || '-'}</td><td>${u.customer_code || '-'}</td>
+      <td>${u.is_active ? '<span style="color:#27ae60">启用</span>' : '<span style="color:#e74c3c">禁用</span>'}</td>
+      <td><button class="btn btn-outline" onclick="editUser(${u.id})">编辑</button></td>
+    </tr>
+  `).join('');
+}
+
+function openUserModal() {
+  document.getElementById('userModalTitle').textContent = '新增用户';
+  document.getElementById('editUserId').value = '';
+  document.getElementById('uUsername').value = '';
+  document.getElementById('uUsername').disabled = false;
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uDisplayName').value = '';
+  document.getElementById('uRole').value = 'staff';
+  document.getElementById('uCustomerCode').value = '';
+  document.getElementById('userModal').classList.add('show');
+}
+function closeUserModal() { document.getElementById('userModal').classList.remove('show'); }
+
+async function editUser(id) {
+  const res = await apiFetch('/api/users');
+  const data = await res.json();
+  const u = data.data.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('userModalTitle').textContent = '编辑用户';
+  document.getElementById('editUserId').value = u.id;
+  document.getElementById('uUsername').value = u.username;
+  document.getElementById('uUsername').disabled = true;
+  document.getElementById('uPassword').value = '';
+  document.getElementById('uDisplayName').value = u.display_name || '';
+  document.getElementById('uRole').value = u.role;
+  document.getElementById('uCustomerCode').value = u.customer_code || '';
+  document.getElementById('userModal').classList.add('show');
+}
+
+async function saveUser() {
+  const editId = document.getElementById('editUserId').value;
+  const payload = {
+    display_name: document.getElementById('uDisplayName').value,
+    role: document.getElementById('uRole').value,
+    customer_code: document.getElementById('uCustomerCode').value
+  };
+  const pwd = document.getElementById('uPassword').value;
+  if (pwd) payload.password = pwd;
+
+  if (editId) {
+    await apiFetch('/api/users/' + editId, { method: 'PATCH', body: JSON.stringify(payload) });
+  } else {
+    payload.username = document.getElementById('uUsername').value;
+    payload.password = pwd;
+    if (!payload.username || !payload.password) { alert('用户名和密码不能为空'); return; }
+    await apiFetch('/api/users', { method: 'POST', body: JSON.stringify(payload) });
+  }
+  closeUserModal();
+  loadUsers();
+}
+
+// ===== Wizard =====
+let wizardStep = 1;
+let wizardPhotos = [];
+let wizardCondition = '';
+
+function detectCarrier(tracking) {
+  if (!tracking) return '';
+  if (/^1Z/i.test(tracking)) return 'UPS';
+  if (/^\d{12,22}$/.test(tracking)) return 'FedEx';
+  if (/^\d{20,22}$/.test(tracking) || /^9[2-5]\d{20,}$/.test(tracking)) return 'USPS';
+  if (/^TBA/i.test(tracking)) return 'Amazon';
+  if (/^JD/i.test(tracking)) return 'JD Logistics';
+  return '';
+}
+
+document.getElementById('wizTracking').addEventListener('input', (e) => {
+  document.getElementById('wizCarrier').value = detectCarrier(e.target.value.trim());
+});
+
+document.getElementById('wizPhotos').addEventListener('change', (e) => {
+  wizardPhotos = Array.from(e.target.files);
+  const preview = document.getElementById('photoPreview');
+  preview.innerHTML = '';
+  wizardPhotos.forEach(f => {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f);
+    preview.appendChild(img);
+  });
+});
+
+function selectCondition(el) {
+  document.querySelectorAll('.condition-option').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  wizardCondition = el.dataset.value;
+}
+
+function openWizard() {
+  wizardStep = 1;
+  wizardPhotos = [];
+  wizardCondition = '';
+  document.getElementById('wizTracking').value = '';
+  document.getElementById('wizCarrier').value = '';
+  document.getElementById('wizSku').value = '';
+  document.getElementById('wizPallet').value = '';
+  document.getElementById('wizNotes').value = '';
+  document.getElementById('photoPreview').innerHTML = '';
+  document.querySelectorAll('.condition-option').forEach(x => x.classList.remove('selected'));
+  updateWizardUI();
+  document.getElementById('wizardOverlay').classList.add('show');
+}
+
+function closeWizard() { document.getElementById('wizardOverlay').classList.remove('show'); }
+
+function updateWizardUI() {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('wizStep' + i).style.display = i === wizardStep ? 'block' : 'none';
+    const stepEl = document.getElementById('ws' + i);
+    stepEl.className = 'step' + (i === wizardStep ? ' active' : i < wizardStep ? ' done' : '');
+  }
+  document.getElementById('wizBtnBack').style.visibility = wizardStep > 1 ? 'visible' : 'hidden';
+  document.getElementById('wizBtnNext').textContent = wizardStep === 4 ? '提交' : '下一步';
+}
+
+function wizardBack() {
+  if (wizardStep > 1) { wizardStep--; updateWizardUI(); }
+}
+
+async function wizardNext() {
+  if (wizardStep === 1) {
+    if (!document.getElementById('wizTracking').value.trim()) { alert('请输入快递单号'); return; }
+    wizardStep++;
+  } else if (wizardStep === 2) {
+    wizardStep++;
+  } else if (wizardStep === 3) {
+    // Show summary
+    const summary = `
+      <p><strong>快递单号:</strong> ${document.getElementById('wizTracking').value}</p>
+      <p><strong>快递公司:</strong> ${document.getElementById('wizCarrier').value || '未识别'}</p>
+      <p><strong>SKU:</strong> ${document.getElementById('wizSku').value || '-'}</p>
+      <p><strong>托盘号:</strong> ${document.getElementById('wizPallet').value || '-'}</p>
+      <p><strong>照片数量:</strong> ${wizardPhotos.length} 张</p>
+      <p><strong>外观评级:</strong> ${wizardCondition || '未选择'}</p>
+      <p><strong>备注:</strong> ${document.getElementById('wizNotes').value || '-'}</p>
+    `;
+    document.getElementById('wizSummary').innerHTML = summary;
+    wizardStep++;
+  } else if (wizardStep === 4) {
+    // Submit
+    const formData = new FormData();
+    formData.append('tracking_number', document.getElementById('wizTracking').value.trim());
+    formData.append('carrier', document.getElementById('wizCarrier').value);
+    formData.append('sku', document.getElementById('wizSku').value);
+    formData.append('pallet_number', document.getElementById('wizPallet').value);
+    formData.append('condition', wizardCondition);
+    formData.append('notes', document.getElementById('wizNotes').value);
+    wizardPhotos.forEach(f => formData.append('photos', f));
+
+    try {
+      const res = await fetch(API + '/api/returns', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert('入库成功！退货单ID: ' + data.id);
+      closeWizard();
+      loadDashboard();
+    } catch (e) {
+      alert('入库失败: ' + e.message);
+    }
+    return;
+  }
+  updateWizardUI();
+}
+
+// ===== Export =====
+function exportExcel() {
+  window.open(API + '/api/export?token=' + token, '_blank');
+}
+
+// Init
+loadDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+node_modules/
+wms.db
+public/uploads/*
+!public/uploads/.gitkeep

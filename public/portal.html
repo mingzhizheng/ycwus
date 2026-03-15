@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>货主门户 - WMS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
+.topbar {
+  background: #16213e; color: #fff; padding: 0 24px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar h1 { font-size: 18px; }
+.topbar .user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.topbar .btn-logout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+.container { max-width: 1000px; margin: 0 auto; padding: 24px 16px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; background: #fff; border-radius: 12px; padding: 4px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow-x: auto; }
+.tab {
+  padding: 10px 16px; border-radius: 8px; border: none; background: transparent;
+  cursor: pointer; font-size: 13px; font-weight: 500; color: #888; white-space: nowrap;
+  transition: all .2s;
+}
+.tab.active { background: #667eea; color: #fff; }
+.tab:hover:not(.active) { background: #f0f0f0; }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
+
+/* Return items */
+.return-item {
+  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
+  cursor: pointer; transition: all .2s;
+}
+.return-item:hover { border-color: #667eea; box-shadow: 0 2px 12px rgba(102,126,234,0.1); }
+.return-item .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.return-item .tracking { font-weight: 600; font-size: 15px; color: #333; }
+.return-item .meta { display: flex; gap: 16px; font-size: 13px; color: #888; }
+
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+}
+.badge-received { background: #e3f2fd; color: #1976d2; }
+.badge-unclaimed { background: #fff3e0; color: #e65100; }
+.badge-pending { background: #fce4ec; color: #c62828; }
+.badge-resend { background: #e8f5e9; color: #2e7d32; }
+.badge-refurbish { background: #f3e5f5; color: #7b1fa2; }
+.badge-in_repair { background: #fff8e1; color: #f57f17; }
+.badge-done { background: #e8f5e9; color: #1b5e20; }
+.badge-dispose { background: #efebe9; color: #4e342e; }
+
+/* Timeline */
+.timeline { padding: 16px 0; }
+.timeline-item { display: flex; gap: 12px; padding-bottom: 16px; position: relative; }
+.timeline-item::before {
+  content: ''; position: absolute; left: 7px; top: 20px; bottom: 0; width: 2px; background: #eee;
+}
+.timeline-item:last-child::before { display: none; }
+.timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: #667eea; flex-shrink: 0; margin-top: 2px; }
+.timeline-content { flex: 1; }
+.timeline-content .action { font-weight: 500; font-size: 14px; color: #333; }
+.timeline-content .note { font-size: 13px; color: #888; margin-top: 2px; }
+.timeline-content .time { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+/* Decision */
+.decision-card {
+  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
+}
+.decision-card .info { margin-bottom: 12px; }
+.decision-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: opacity .2s; }
+.btn-primary { background: #667eea; color: #fff; }
+.btn-success { background: #27ae60; color: #fff; }
+.btn-warning { background: #f39c12; color: #fff; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-outline { background: transparent; border: 1px solid #ddd; color: #555; }
+.btn:hover { opacity: 0.85; }
+
+/* Unclaimed */
+.unclaimed-card {
+  border: 1px solid #eee; border-radius: 10px; padding: 16px; margin-bottom: 12px;
+}
+.unclaimed-photos { display: flex; gap: 8px; margin: 8px 0; }
+.unclaimed-photos img { width: 64px; height: 64px; object-fit: cover; border-radius: 6px; }
+
+/* Search */
+.search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+.search-bar input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+
+/* Product table */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #eee; }
+td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: #555; }
+.form-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+.form-group input:focus { outline: none; border-color: #667eea; }
+
+/* Detail modal */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5); z-index: 200; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 520px; max-height: 80vh; overflow-y: auto; }
+.modal-box h2 { margin-bottom: 16px; font-size: 18px; }
+.modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+
+.detail-photos { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.detail-photos img { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: #888; font-size: 14px; }
+
+/* Repair progress */
+.progress-bar { background: #eee; border-radius: 4px; height: 8px; margin-top: 6px; }
+.progress-fill { background: #27ae60; height: 100%; border-radius: 4px; transition: width .3s; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>货主自助门户</h1>
+  <div class="user-info">
+    <span id="userDisplay"></span>
+    <button class="btn-logout" onclick="logout()">退出登录</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" data-tab="myreturns">我的退货</button>
+    <button class="tab" data-tab="decisions">待处理决策</button>
+    <button class="tab" data-tab="unclaimed">认领货品</button>
+    <button class="tab" data-tab="repairs">维修进度</button>
+    <button class="tab" data-tab="products">货品管理</button>
+  </div>
+
+  <!-- 我的退货 -->
+  <div class="tab-content active" id="tab-myreturns">
+    <div class="search-bar">
+      <input type="text" id="searchMyReturns" placeholder="搜索单号 / SKU...">
+      <button class="btn btn-primary" onclick="loadMyReturns()">搜索</button>
+    </div>
+    <div id="myReturnsList"></div>
+  </div>
+
+  <!-- 待处理决策 -->
+  <div class="tab-content" id="tab-decisions">
+    <div id="decisionsList"></div>
+  </div>
+
+  <!-- 认领货品 -->
+  <div class="tab-content" id="tab-unclaimed">
+    <div class="search-bar">
+      <input type="text" id="searchUnclaimed" placeholder="搜索单号 / SKU...">
+      <button class="btn btn-primary" onclick="loadUnclaimed()">搜索</button>
+    </div>
+    <div id="unclaimedList"></div>
+  </div>
+
+  <!-- 维修进度 -->
+  <div class="tab-content" id="tab-repairs">
+    <div id="repairsList"></div>
+  </div>
+
+  <!-- 货品管理 -->
+  <div class="tab-content" id="tab-products">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="font-size:16px">我的SKU目录</h3>
+        <button class="btn btn-primary" onclick="openProductForm()">+ 新增SKU</button>
+      </div>
+      <div id="addProductForm" style="display:none;margin-bottom:16px;padding:16px;border:1px solid #eee;border-radius:8px">
+        <div class="form-group"><label>SKU编码 *</label><input type="text" id="pSku" placeholder="SKU编码"></div>
+        <div class="form-group"><label>名称</label><input type="text" id="pName" placeholder="产品名称"></div>
+        <div class="form-group"><label>规格</label><input type="text" id="pSpec" placeholder="规格说明"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="saveProduct()">保存</button>
+          <button class="btn btn-outline" onclick="closeProductForm()">取消</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>SKU</th><th>名称</th><th>规格</th><th>添加时间</th><th>操作</th></tr></thead>
+        <tbody id="productsList"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeDetail()">&times;</button>
+    <h2>退货详情</h2>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || '{}');
+if (!token) window.location.href = '/login.html';
+if (user.role !== 'customer' && user.role !== 'admin') window.location.href = '/ops.html';
+
+document.getElementById('userDisplay').textContent = user.display_name || user.username;
+
+function headers() { return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }; }
+
+async function apiFetch(url, opts = {}) {
+  const res = await fetch(API + url, { headers: headers(), ...opts });
+  if (res.status === 401) { localStorage.clear(); window.location.href = '/login.html'; }
+  return res;
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+    if (t.dataset.tab === 'myreturns') loadMyReturns();
+    if (t.dataset.tab === 'decisions') loadDecisions();
+    if (t.dataset.tab === 'unclaimed') loadUnclaimed();
+    if (t.dataset.tab === 'repairs') loadRepairs();
+    if (t.dataset.tab === 'products') loadProducts();
+  });
+});
+
+const statusLabels = { received: '已收货', unclaimed: '无主货', pending: '待决策', resend: '重发', refurbish: '翻新', in_repair: '维修中', done: '已完成', dispose: '已销毁' };
+function statusBadge(s) { return `<span class="badge badge-${s}">${statusLabels[s] || s}</span>`; }
+
+function logout() { localStorage.clear(); window.location.href = '/login.html'; }
+
+// ===== 我的退货 =====
+async function loadMyReturns() {
+  const search = document.getElementById('searchMyReturns').value;
+  let url = '/api/returns?limit=100';
+  if (search) url += '&search=' + encodeURIComponent(search);
+  const res = await apiFetch(url);
+  const data = await res.json();
+  const el = document.getElementById('myReturnsList');
+  if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无退货记录</div>'; return; }
+  el.innerHTML = data.data.map(r => `
+    <div class="return-item" onclick="showDetail(${r.id})">
+      <div class="top">
+        <span class="tracking">${r.tracking_number}</span>
+        ${statusBadge(r.status)}
+      </div>
+      <div class="meta">
+        <span>SKU: ${r.sku || '-'}</span>
+        <span>外观: ${r.condition || '-'}</span>
+        <span>${r.created_date}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== 退货详情 =====
+async function showDetail(id) {
+  const res = await apiFetch('/api/returns/' + id);
+  const r = await res.json();
+  const photos = JSON.parse(r.photos || '[]');
+  document.getElementById('detailContent').innerHTML = `
+    <p><strong>快递单号:</strong> ${r.tracking_number}</p>
+    <p><strong>快递公司:</strong> ${r.carrier || '-'}</p>
+    <p><strong>SKU:</strong> ${r.sku || '-'}</p>
+    <p><strong>外观:</strong> ${r.condition || '-'}</p>
+    <p><strong>托盘号:</strong> ${r.pallet_number || '-'}</p>
+    <p><strong>状态:</strong> ${statusBadge(r.status)}</p>
+    <p><strong>备注:</strong> ${r.notes || '-'}</p>
+    ${photos.length ? `<div class="detail-photos">${photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
+    <h3 style="margin-top:16px;margin-bottom:8px;font-size:15px">操作记录</h3>
+    <div class="timeline">
+      ${(r.logs || []).map(l => `
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="action">${l.action}</div>
+            <div class="note">${l.note || ''}</div>
+            <div class="time">${l.created_at} · ${l.created_by_name || ''}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeDetail() { document.getElementById('detailModal').classList.remove('show'); }
+
+// ===== 待处理决策 =====
+async function loadDecisions() {
+  const res = await apiFetch('/api/returns?status=received&limit=100');
+  const data = await res.json();
+  const el = document.getElementById('decisionsList');
+  if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无待处理的货品</div>'; return; }
+  el.innerHTML = data.data.map(r => `
+    <div class="decision-card">
+      <div class="info">
+        <strong>${r.tracking_number}</strong> · ${r.sku || '-'} · ${r.condition || '-'}
+        <div style="font-size:12px;color:#888;margin-top:4px">${r.created_date}</div>
+      </div>
+      <div class="decision-btns">
+        <button class="btn btn-success" onclick="makeDecision(${r.id},'resend')">重新发货</button>
+        <button class="btn btn-warning" onclick="makeDecision(${r.id},'refurbish')">翻新处理</button>
+        <button class="btn btn-danger" onclick="makeDecision(${r.id},'dispose')">销毁</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function makeDecision(id, decision) {
+  const labels = { resend: '重新发货', refurbish: '翻新处理', dispose: '销毁' };
+  if (!confirm(`确定要选择「${labels[decision]}」吗？`)) return;
+  const notes = decision === 'refurbish' ? prompt('请描述需要翻新的问题（可选）：') : null;
+  await apiFetch('/api/returns/' + id + '/decision', {
+    method: 'PATCH',
+    body: JSON.stringify({ decision, notes })
+  });
+  loadDecisions();
+}
+
+// ===== 认领货品 =====
+async function loadUnclaimed() {
+  const search = document.getElementById('searchUnclaimed').value;
+  let url = '/api/unclaimed';
+  if (search) url += '?search=' + encodeURIComponent(search);
+  const res = await apiFetch(url);
+  const data = await res.json();
+  const el = document.getElementById('unclaimedList');
+  if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无无主货品</div>'; return; }
+  el.innerHTML = data.data.map(r => {
+    const photos = JSON.parse(r.photos || '[]');
+    return `
+      <div class="unclaimed-card">
+        <div style="display:flex;justify-content:space-between;align-items:start">
+          <div>
+            <strong>${r.tracking_number}</strong><br>
+            <span style="font-size:13px;color:#888">SKU: ${r.sku || '-'} · ${r.condition || '-'} · ${r.created_date}</span>
+          </div>
+          <button class="btn btn-primary" onclick="claimItem(${r.id})">认领</button>
+        </div>
+        ${photos.length ? `<div class="unclaimed-photos">${photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function claimItem(id) {
+  if (!confirm('确定认领这个货品吗？')) return;
+  await apiFetch('/api/unclaimed/' + id + '/claim', { method: 'POST' });
+  loadUnclaimed();
+}
+
+// ===== 维修进度 =====
+async function loadRepairs() {
+  const res = await apiFetch('/api/repair');
+  const data = await res.json();
+  const el = document.getElementById('repairsList');
+  if (!data.data.length) { el.innerHTML = '<div class="empty-state">暂无维修工单</div>'; return; }
+  const repairStatusLabels = { pending: '待处理', in_progress: '维修中', done: '已完成' };
+  el.innerHTML = data.data.map(r => `
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>工单 #${r.id}</strong> · ${r.tracking_number}
+          <div style="font-size:13px;color:#888;margin-top:4px">SKU: ${r.sku || '-'}</div>
+        </div>
+        ${statusBadge(r.status === 'pending' ? 'pending' : r.status === 'in_progress' ? 'in_repair' : 'done')}
+      </div>
+      <div style="margin-top:8px;font-size:13px">
+        <p><strong>问题:</strong> ${r.issue || '-'}</p>
+        <p><strong>诊断:</strong> ${r.diagnosis || '-'}</p>
+        <p><strong>进度:</strong> ${r.pct}%</p>
+        <div class="progress-bar"><div class="progress-fill" style="width:${r.pct}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ===== 货品管理 =====
+async function loadProducts() {
+  const res = await apiFetch('/api/products');
+  const data = await res.json();
+  document.getElementById('productsList').innerHTML = data.data.length
+    ? data.data.map(p => `
+      <tr>
+        <td>${p.sku}</td><td>${p.name || '-'}</td><td>${p.spec || '-'}</td>
+        <td>${p.created_at}</td>
+        <td><button class="btn btn-danger" onclick="deleteProduct(${p.id})" style="font-size:12px;padding:4px 10px">删除</button></td>
+      </tr>
+    `).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">暂无SKU记录，点击上方按钮添加</td></tr>';
+}
+
+function openProductForm() { document.getElementById('addProductForm').style.display = 'block'; }
+function closeProductForm() {
+  document.getElementById('addProductForm').style.display = 'none';
+  document.getElementById('pSku').value = '';
+  document.getElementById('pName').value = '';
+  document.getElementById('pSpec').value = '';
+}
+
+async function saveProduct() {
+  const sku = document.getElementById('pSku').value.trim();
+  if (!sku) { alert('请输入SKU编码'); return; }
+  const res = await apiFetch('/api/products', {
+    method: 'POST',
+    body: JSON.stringify({ sku, name: document.getElementById('pName').value, spec: document.getElementById('pSpec').value })
+  });
+  if (!res.ok) { const d = await res.json(); alert(d.error); return; }
+  closeProductForm();
+  loadProducts();
+}
+
+async function deleteProduct(id) {
+  if (!confirm('确定删除这个SKU吗？')) return;
+  await apiFetch('/api/products/' + id, { method: 'DELETE' });
+  loadProducts();
+}
+
+// Init
+loadMyReturns();
+</script>
+</body>
+</html>
