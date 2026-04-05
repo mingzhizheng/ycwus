@@ -1,261 +1,606 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DYMS - 仓库PDA</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.0/dist/cdn.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>DYMS - 仓库PDA Warehouse PDA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    /* Larger touch targets for gloved hands */
+    .touch-btn { min-height: 56px; min-width: 56px; }
+    .touch-input { min-height: 52px; font-size: 18px; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen" x-data="pdaApp()">
+<body class="bg-gray-900 min-h-screen text-white" x-data="pdaApp()" x-init="init()" x-cloak>
 
-<!-- Login Screen -->
-<template x-if="!token">
-  <div class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
-      <h1 class="text-2xl font-bold text-center mb-6">仓库PDA</h1>
-      <input x-model="loginForm.username" type="text" placeholder="用户名"
-        class="w-full border rounded-xl px-4 py-3 mb-3 text-lg">
-      <input x-model="loginForm.password" type="password" placeholder="密码"
-        class="w-full border rounded-xl px-4 py-3 mb-4 text-lg">
-      <button @click="login()" class="w-full bg-indigo-600 text-white rounded-xl py-3 text-lg font-semibold">
-        登录
-      </button>
-      <p x-show="loginError" class="text-red-500 text-center mt-3 text-sm" x-text="loginError"></p>
+  <!-- Login Screen -->
+  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-gray-800 rounded-2xl shadow-lg max-w-md w-full p-8">
+      <h1 class="text-3xl font-bold text-center text-yellow-400 mb-2">DYMS 仓库 PDA</h1>
+      <p class="text-center text-gray-400 mb-6">Warehouse PDA</p>
+      <form @submit.prevent="login()">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-300 mb-1">工号 Staff ID</label>
+          <input type="text" x-model="credentials.username" required
+                 class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-4 text-xl focus:border-yellow-400 focus:outline-none touch-input">
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-300 mb-1">密码 Password</label>
+          <input type="password" x-model="credentials.password" required
+                 class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-4 text-xl focus:border-yellow-400 focus:outline-none touch-input">
+        </div>
+        <button type="submit" :disabled="loading"
+                class="w-full bg-yellow-500 text-gray-900 text-xl font-bold py-4 rounded-xl disabled:bg-gray-600 touch-btn">
+          <span x-show="!loading">登录 Login</span>
+          <span x-show="loading">登录中...</span>
+        </button>
+      </form>
+      <div x-show="errorMsg" class="mt-4 bg-red-900 text-red-200 rounded-lg p-3 text-center" x-text="errorMsg"></div>
     </div>
   </div>
-</template>
 
-<!-- Main PDA Interface -->
-<template x-if="token">
-  <div>
+  <!-- Main App -->
+  <div x-show="loggedIn">
+
     <!-- Header -->
-    <div class="bg-indigo-900 text-white px-4 py-3 flex justify-between items-center sticky top-0 z-50">
-      <h1 class="text-lg font-bold">PDA</h1>
-      <div class="flex gap-2">
-        <button @click="activeView='tasks'" :class="activeView==='tasks'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">任务</button>
-        <button @click="activeView='yard'" :class="activeView==='yard'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">车场</button>
-        <button @click="activeView='walk'" :class="activeView==='walk'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">盘点</button>
-        <button @click="logout()" class="px-3 py-1 bg-red-500/30 rounded text-sm">退出</button>
+    <header class="bg-gray-800 p-3 sticky top-0 z-40 border-b border-gray-700">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <h1 class="text-lg font-bold text-yellow-400">PDA</h1>
+          <span class="text-sm text-gray-400" x-text="user.username"></span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-gray-400" x-text="currentTime"></span>
+          <button @click="logout()" class="bg-gray-700 px-3 py-2 rounded-lg text-xs touch-btn">退出</button>
+        </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Tasks View -->
-    <div x-show="activeView==='tasks'" class="p-4 space-y-3">
-      <div class="flex justify-between items-center mb-2">
-        <h2 class="text-lg font-bold">今日任务</h2>
-        <button @click="fetchTasks()" class="text-indigo-600 text-sm">刷新</button>
-      </div>
+    <!-- Mode Tabs -->
+    <nav class="bg-gray-800 flex border-b border-gray-700 sticky top-[52px] z-30">
+      <button @click="mode = 'tasks'; loadTasks()" :class="mode === 'tasks' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-bold text-base border-b-2 transition-colors touch-btn">
+        今日任务
+      </button>
+      <button @click="mode = 'yard'; loadYardInventory()" :class="mode === 'yard' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-bold text-base border-b-2 transition-colors touch-btn">
+        堆场 Yard
+      </button>
+      <button @click="mode = 'walk'" :class="mode === 'walk' ? 'border-yellow-400 text-yellow-400' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-bold text-base border-b-2 transition-colors touch-btn">
+        巡场 Walk
+      </button>
+    </nav>
 
-      <template x-for="appt in tasks" :key="appt.id">
-        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4"
-          :class="{
-            'border-green-500': appt.status==='CHECKED_IN',
-            'border-indigo-500': appt.status==='DOCK_ASSIGNED',
-            'border-orange-500': appt.status==='UNLOADING',
-            'border-teal-500': appt.status==='UNLOAD_COMPLETE',
-            'border-gray-300': !['CHECKED_IN','DOCK_ASSIGNED','UNLOADING','UNLOAD_COMPLETE'].includes(appt.status)
-          }">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <span class="font-mono font-bold text-lg" x-text="appt.dock_code || '待分配'"></span>
-              <span class="ml-2 px-2 py-0.5 rounded text-xs font-medium"
-                :class="{
-                  'bg-green-100 text-green-800': appt.status==='CHECKED_IN',
-                  'bg-indigo-100 text-indigo-800': appt.status==='DOCK_ASSIGNED',
-                  'bg-orange-100 text-orange-800': appt.status==='UNLOADING',
-                  'bg-teal-100 text-teal-800': appt.status==='UNLOAD_COMPLETE'
-                }" x-text="appt.status"></span>
+    <div class="p-3">
+
+      <!-- Tasks Mode -->
+      <div x-show="mode === 'tasks'" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">今日任务 Today's Tasks</h2>
+          <button @click="loadTasks()" class="text-yellow-400 text-sm font-bold touch-btn px-3">刷新</button>
+        </div>
+
+        <div x-show="Object.keys(tasksByDock).length === 0" class="text-center text-gray-500 py-12 text-lg">
+          暂无任务
+        </div>
+
+        <template x-for="(tasks, dock) in tasksByDock" :key="dock">
+          <div class="space-y-2">
+            <!-- Dock Group Header -->
+            <div class="bg-gray-700 rounded-lg px-4 py-2 flex items-center justify-between">
+              <span class="text-lg font-bold text-yellow-400" x-text="dock === 'UNASSIGNED' ? '未分配 Unassigned' : 'Dock ' + dock"></span>
+              <span class="bg-gray-600 px-3 py-1 rounded-full text-sm" x-text="tasks.length + ' 个任务'"></span>
             </div>
-            <span class="text-sm text-gray-500" x-text="'#'+appt.id"></span>
-          </div>
-          <div class="text-sm text-gray-600 mb-3">
-            <span x-text="appt.shipper_name"></span> |
-            <span x-text="appt.truck_plate || 'N/A'"></span> |
-            <span x-text="appt.appointment_type"></span>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="flex gap-2 flex-wrap">
-            <template x-if="appt.status==='DOCK_ASSIGNED'">
-              <button @click="transitionStatus(appt.id, 'UNLOADING')"
-                class="flex-1 bg-orange-500 text-white rounded-xl py-3 text-base font-semibold">
-                开始卸货
-              </button>
-            </template>
-
-            <template x-if="appt.status==='UNLOADING'">
-              <div class="w-full space-y-2">
-                <div class="flex gap-2">
-                  <label class="flex-1 bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-3 text-center cursor-pointer">
-                    <input type="file" accept="image/*" capture="environment" class="hidden"
-                      @change="uploadPhoto($event, appt.id, 'DOOR_OPEN')">
-                    <div class="text-blue-600 font-semibold">开门照</div>
-                  </label>
-                  <label class="flex-1 bg-teal-50 border-2 border-dashed border-teal-300 rounded-xl p-3 text-center cursor-pointer">
-                    <input type="file" accept="image/*" capture="environment" class="hidden"
-                      @change="uploadPhoto($event, appt.id, 'CLEAR_OUT')">
-                    <div class="text-teal-600 font-semibold">清场照</div>
-                  </label>
+            <!-- Task Cards -->
+            <template x-for="task in tasks" :key="task.id">
+              <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 space-y-3">
+                <!-- Task Header -->
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-xl" x-text="task.container_number"></span>
+                  <span class="px-3 py-1 rounded-full text-sm font-bold" :class="taskStatusClass(task.status)" x-text="taskStatusLabel(task.status)"></span>
                 </div>
-                <button @click="transitionStatus(appt.id, 'UNLOAD_COMPLETE')"
-                  class="w-full bg-teal-600 text-white rounded-xl py-3 text-base font-semibold">
-                  卸货完成 / 报空
-                </button>
+
+                <!-- Task Info -->
+                <div class="grid grid-cols-2 gap-2 text-sm text-gray-400">
+                  <div>模式: <span class="text-white font-semibold" x-text="task.delivery_mode"></span></div>
+                  <div>时间: <span class="text-white font-semibold" x-text="formatTime(task.scheduled_time)"></span></div>
+                  <div x-show="task.carrier_name">承运: <span class="text-white font-semibold" x-text="task.carrier_name"></span></div>
+                  <div x-show="task.cargo_type">货物: <span class="text-white font-semibold" x-text="task.cargo_type"></span></div>
+                </div>
+
+                <!-- Action Buttons based on status -->
+
+                <!-- CHECKED_IN: Assign Dock -->
+                <div x-show="task.status === 'CHECKED_IN'" class="space-y-2">
+                  <div class="flex items-center space-x-2">
+                    <select x-model="task._assignDock" class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-lg text-white touch-input">
+                      <option value="">选择 Dock...</option>
+                      <template x-for="d in availableDocks" :key="d.code">
+                        <option :value="d.code" x-text="d.code + (d.busy ? ' (使用中)' : ' (空闲)')"></option>
+                      </template>
+                    </select>
+                    <button @click="assignDock(task)" :disabled="!task._assignDock || loading"
+                            class="bg-purple-600 text-white font-bold px-6 py-3 rounded-xl text-lg disabled:bg-gray-600 touch-btn whitespace-nowrap">
+                      分配Dock
+                    </button>
+                  </div>
+                </div>
+
+                <!-- DOCK_ASSIGNED: Start Unloading -->
+                <div x-show="task.status === 'DOCK_ASSIGNED'">
+                  <button @click="startUnloading(task)" :disabled="loading"
+                          class="w-full bg-yellow-500 text-gray-900 font-bold py-4 rounded-xl text-xl touch-btn">
+                    开始卸货 Start Unloading
+                  </button>
+                </div>
+
+                <!-- UNLOADING: Photos + Complete -->
+                <div x-show="task.status === 'UNLOADING'" class="space-y-3">
+                  <!-- Door Open Photo -->
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-400 mb-1">开门照片 Door Open</label>
+                    <div x-show="!task._photos?.DOOR_OPEN" class="border-2 border-dashed border-gray-600 rounded-xl p-4 text-center">
+                      <label class="cursor-pointer">
+                        <div class="text-3xl mb-1">📷</div>
+                        <div class="text-yellow-400 font-bold">点击拍照</div>
+                        <input type="file" accept="image/*" capture="environment" class="hidden"
+                               @change="handleTaskPhoto($event, task, 'DOOR_OPEN')">
+                      </label>
+                    </div>
+                    <div x-show="task._photos?.DOOR_OPEN" class="relative">
+                      <img :src="task._photos?.DOOR_OPEN" class="w-full h-32 object-cover rounded-xl">
+                      <button @click="task._photos.DOOR_OPEN = null" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-8 h-8 text-sm font-bold">✕</button>
+                    </div>
+                  </div>
+
+                  <!-- Clear Out Photo -->
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-400 mb-1">清空照片 Clear Out</label>
+                    <div x-show="!task._photos?.CLEAR_OUT" class="border-2 border-dashed border-gray-600 rounded-xl p-4 text-center">
+                      <label class="cursor-pointer">
+                        <div class="text-3xl mb-1">📷</div>
+                        <div class="text-yellow-400 font-bold">点击拍照</div>
+                        <input type="file" accept="image/*" capture="environment" class="hidden"
+                               @change="handleTaskPhoto($event, task, 'CLEAR_OUT')">
+                      </label>
+                    </div>
+                    <div x-show="task._photos?.CLEAR_OUT" class="relative">
+                      <img :src="task._photos?.CLEAR_OUT" class="w-full h-32 object-cover rounded-xl">
+                      <button @click="task._photos.CLEAR_OUT = null" class="absolute top-1 right-1 bg-red-600 text-white rounded-full w-8 h-8 text-sm font-bold">✕</button>
+                    </div>
+                  </div>
+
+                  <button @click="completeUnloading(task)" :disabled="loading"
+                          class="w-full bg-green-600 text-white font-bold py-4 rounded-xl text-xl touch-btn">
+                    卸货完成 Unload Complete
+                  </button>
+                </div>
+
+                <!-- UNLOAD_COMPLETE: Move Container -->
+                <div x-show="task.status === 'UNLOAD_COMPLETE'">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <input type="text" x-model="task._yardSlot" placeholder="堆场位置 Yard Slot"
+                           class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-lg text-white touch-input">
+                  </div>
+                  <button @click="moveContainer(task)" :disabled="loading"
+                          class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl text-xl touch-btn">
+                    移柜 Move Container
+                  </button>
+                </div>
               </div>
             </template>
-
-            <template x-if="appt.status==='UNLOAD_COMPLETE'">
-              <button @click="yardMove(appt.id)"
-                class="flex-1 bg-purple-600 text-white rounded-xl py-3 text-base font-semibold">
-                移柜至临时车位
-              </button>
-            </template>
-          </div>
-        </div>
-      </template>
-
-      <div x-show="tasks.length===0" class="text-center text-gray-400 py-12">暂无任务</div>
-    </div>
-
-    <!-- Yard Inventory View -->
-    <div x-show="activeView==='yard'" class="p-4">
-      <h2 class="text-lg font-bold mb-3">车场在库</h2>
-      <button @click="fetchYard()" class="text-indigo-600 text-sm mb-3">刷新</button>
-
-      <div class="grid grid-cols-2 gap-3">
-        <template x-for="item in yardItems" :key="item.id">
-          <div class="bg-white rounded-xl p-3 shadow-sm">
-            <div class="font-mono font-bold" x-text="item.yard_code || 'N/A'"></div>
-            <div class="text-sm text-gray-600" x-text="item.shipper_name"></div>
-            <div class="text-xs text-gray-400" x-text="item.truck_plate"></div>
-            <span class="px-2 py-0.5 rounded text-xs mt-1 inline-block"
-              :class="{'bg-purple-100 text-purple-800': item.status==='YARD_MOVED', 'bg-teal-100 text-teal-800': item.status!=='YARD_MOVED'}"
-              x-text="item.status"></span>
           </div>
         </template>
       </div>
-    </div>
 
-    <!-- Yard Walk View -->
-    <div x-show="activeView==='walk'" class="p-4">
-      <h2 class="text-lg font-bold mb-3">车场盘点</h2>
-      <p class="text-sm text-gray-500 mb-4">扫描或输入柜号核对在库状态</p>
-      <input x-model="walkInput" type="text" placeholder="输入柜号或车牌号"
-        class="w-full border-2 rounded-xl px-4 py-3 text-lg mb-3"
-        @keyup.enter="verifyYardItem()">
-      <button @click="verifyYardItem()" class="w-full bg-indigo-600 text-white rounded-xl py-3 text-lg font-semibold">
-        核对
-      </button>
-      <div x-show="walkResult" class="mt-4 bg-white rounded-xl p-4 shadow-sm">
-        <pre class="text-sm" x-text="JSON.stringify(walkResult, null, 2)"></pre>
+      <!-- Yard Mode -->
+      <div x-show="mode === 'yard'" class="space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">堆场库存 Yard Inventory</h2>
+          <button @click="loadYardInventory()" class="text-yellow-400 text-sm font-bold touch-btn px-3">刷新</button>
+        </div>
+
+        <!-- Yard Summary -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <div class="text-2xl font-bold text-yellow-400" x-text="yardSummary.total"></div>
+            <div class="text-xs text-gray-400">总柜数</div>
+          </div>
+          <div class="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <div class="text-2xl font-bold text-green-400" x-text="yardSummary.available"></div>
+            <div class="text-xs text-gray-400">空位</div>
+          </div>
+          <div class="bg-gray-800 rounded-xl p-3 text-center border border-gray-700">
+            <div class="text-2xl font-bold text-red-400" x-text="yardSummary.occupied"></div>
+            <div class="text-xs text-gray-400">已占用</div>
+          </div>
+        </div>
+
+        <!-- Search -->
+        <input type="text" x-model="yardSearch" placeholder="搜索柜号 Search Container..."
+               class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-lg text-white touch-input focus:border-yellow-400 focus:outline-none">
+
+        <!-- Yard List -->
+        <div x-show="filteredYardItems.length === 0" class="text-center text-gray-500 py-8">无记录</div>
+        <div class="space-y-2">
+          <template x-for="item in filteredYardItems" :key="item.id">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-3 flex items-center justify-between">
+              <div>
+                <div class="font-bold text-lg" x-text="item.container_number"></div>
+                <div class="text-sm text-gray-400">
+                  <span x-text="item.yard_slot || '未分配'"></span>
+                  <span class="mx-1">|</span>
+                  <span x-text="item.status"></span>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-gray-500" x-text="'入场 ' + formatTime(item.arrived_at)"></div>
+                <div x-show="item.days_in_yard > 2" class="text-xs text-red-400 font-bold" x-text="item.days_in_yard + ' 天'"></div>
+              </div>
+            </div>
+          </template>
+        </div>
       </div>
+
+      <!-- Yard Walk Mode -->
+      <div x-show="mode === 'walk'" class="space-y-4">
+        <div class="bg-gray-800 border border-yellow-500 rounded-xl p-4">
+          <h2 class="text-lg font-bold text-yellow-400 mb-3">巡场模式 Yard Walk</h2>
+          <p class="text-sm text-gray-400 mb-3">扫描或输入柜号，系统将自动核对信息</p>
+
+          <div class="flex items-center space-x-2">
+            <input type="text" x-model="walkInput" placeholder="扫描/输入柜号..."
+                   @keyup.enter="verifyContainer()"
+                   class="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-4 py-4 text-xl text-white touch-input uppercase focus:border-yellow-400 focus:outline-none"
+                   x-ref="walkInput">
+            <button @click="verifyContainer()" :disabled="!walkInput || loading"
+                    class="bg-yellow-500 text-gray-900 font-bold px-6 py-4 rounded-xl text-lg disabled:bg-gray-600 touch-btn">
+              核对
+            </button>
+          </div>
+        </div>
+
+        <!-- Verification Result -->
+        <div x-show="walkResult" class="rounded-xl p-4 border-2"
+             :class="walkResult?.match ? 'bg-green-900/50 border-green-500' : 'bg-red-900/50 border-red-500'">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-2xl font-bold" x-text="walkResult?.container_number"></span>
+            <span class="text-3xl" x-text="walkResult?.match ? '✅' : '❌'"></span>
+          </div>
+          <div x-show="walkResult?.match" class="space-y-1 text-sm">
+            <div>系统位置: <span class="font-bold text-green-400" x-text="walkResult?.expected_slot"></span></div>
+            <div>状态: <span class="font-bold" x-text="walkResult?.status"></span></div>
+            <div>入场时间: <span x-text="formatTime(walkResult?.arrived_at)"></span></div>
+          </div>
+          <div x-show="!walkResult?.match" class="space-y-1">
+            <p class="text-red-300 font-bold text-lg" x-text="walkResult?.message || '系统中未找到该柜号'"></p>
+            <p class="text-sm text-red-400">请核实柜号或联系主管</p>
+          </div>
+        </div>
+
+        <!-- Walk History -->
+        <div x-show="walkHistory.length > 0">
+          <h3 class="text-sm font-bold text-gray-400 mb-2">巡场记录 Walk History</h3>
+          <div class="space-y-1 max-h-64 overflow-y-auto">
+            <template x-for="(item, idx) in walkHistory" :key="idx">
+              <div class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 flex items-center justify-between text-sm">
+                <span class="font-mono" x-text="item.container"></span>
+                <span :class="item.match ? 'text-green-400' : 'text-red-400'" x-text="item.match ? '匹配' : '异常'"></span>
+                <span class="text-gray-500 text-xs" x-text="item.time"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Notifications -->
+    <div x-show="successMsg" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-green-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="successMsg"
+         x-init="$watch('successMsg', v => { if(v) setTimeout(() => successMsg = '', 3000) })"></div>
+    <div x-show="errorMsg && loggedIn" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="errorMsg"
+         x-init="$watch('errorMsg', v => { if(v) setTimeout(() => errorMsg = '', 5000) })"></div>
   </div>
-</template>
 
-<script>
-function pdaApp() {
-  return {
-    token: localStorage.getItem('dyms_token'),
-    loginForm: { username: '', password: '' },
-    loginError: '',
-    activeView: 'tasks',
-    tasks: [],
-    yardItems: [],
-    walkInput: '',
-    walkResult: null,
+  <script>
+    function pdaApp() {
+      return {
+        loggedIn: false,
+        loading: false,
+        user: {},
+        credentials: { username: '', password: '' },
+        errorMsg: '',
+        successMsg: '',
+        currentTime: '',
+        mode: 'tasks',
 
-    async login() {
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.loginForm),
-        });
-        const data = await res.json();
-        if (!res.ok) { this.loginError = data.detail || 'Login failed'; return; }
-        this.token = data.access_token;
-        localStorage.setItem('dyms_token', data.access_token);
-        this.fetchTasks();
-      } catch (e) { this.loginError = 'Network error'; }
-    },
+        // Tasks
+        tasks: [],
+        availableDocks: [],
 
-    logout() {
-      this.token = null;
-      localStorage.removeItem('dyms_token');
-    },
+        // Yard
+        yardItems: [],
+        yardSearch: '',
+        yardSummary: { total: 0, available: 0, occupied: 0 },
 
-    headers() {
-      return { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' };
-    },
+        // Walk
+        walkInput: '',
+        walkResult: null,
+        walkHistory: [],
 
-    async fetchTasks() {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const res = await fetch(`/api/appointments?facility_id=1&date=${today}&page_size=50`, { headers: this.headers() });
-        const data = await res.json();
-        this.tasks = (data.data || []).filter(a =>
-          ['CHECKED_IN', 'DOCK_ASSIGNED', 'UNLOADING', 'UNLOAD_COMPLETE'].includes(a.status)
-        );
-      } catch (e) { console.error(e); }
-    },
+        get tasksByDock() {
+          const groups = {};
+          for (const t of this.tasks) {
+            const dock = t.dock_code || 'UNASSIGNED';
+            if (!groups[dock]) groups[dock] = [];
+            groups[dock].push(t);
+          }
+          // Sort: UNASSIGNED first, then by dock code
+          const sorted = {};
+          if (groups['UNASSIGNED']) sorted['UNASSIGNED'] = groups['UNASSIGNED'];
+          for (const key of Object.keys(groups).filter(k => k !== 'UNASSIGNED').sort()) {
+            sorted[key] = groups[key];
+          }
+          return sorted;
+        },
 
-    async fetchYard() {
-      try {
-        const res = await fetch('/api/dock/yard/inventory?facility_id=1', { headers: this.headers() });
-        const data = await res.json();
-        this.yardItems = data.data || [];
-      } catch (e) { console.error(e); }
-    },
+        get filteredYardItems() {
+          if (!this.yardSearch) return this.yardItems;
+          const q = this.yardSearch.toUpperCase();
+          return this.yardItems.filter(i => i.container_number.includes(q) || (i.yard_slot && i.yard_slot.includes(q)));
+        },
 
-    async transitionStatus(apptId, toStatus) {
-      await fetch(`/api/appointments/${apptId}/status`, {
-        method: 'PATCH',
-        headers: this.headers(),
-        body: JSON.stringify({ to_status: toStatus }),
-      });
-      this.fetchTasks();
-    },
+        init() {
+          const token = localStorage.getItem('dyms_token');
+          if (token) this.verifyToken(token);
 
-    async yardMove(apptId) {
-      await fetch('/api/dock/yard-move', {
-        method: 'POST',
-        headers: this.headers(),
-        body: JSON.stringify({ appointment_id: apptId }),
-      });
-      this.fetchTasks();
-    },
+          // Update clock
+          setInterval(() => {
+            this.currentTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+          }, 1000);
+          this.currentTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        },
 
-    async uploadPhoto(event, apptId, photoType) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('appointment_id', apptId);
-      formData.append('photo_type', photoType);
-      await fetch('/api/evidence/upload', { method: 'POST', body: formData });
-    },
+        getHeaders() {
+          return {
+            'Authorization': `Bearer ${localStorage.getItem('dyms_token')}`,
+            'Content-Type': 'application/json'
+          };
+        },
 
-    async verifyYardItem() {
-      if (!this.walkInput.trim()) return;
-      // Search appointments by truck plate
-      const res = await fetch(`/api/appointments?page_size=5`, { headers: this.headers() });
-      const data = await res.json();
-      const match = (data.data || []).find(a =>
-        a.truck_plate && a.truck_plate.toLowerCase().includes(this.walkInput.toLowerCase())
-      );
-      this.walkResult = match || { message: 'Not found in system' };
-    },
+        async verifyToken(token) {
+          try {
+            const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            const user = await res.json();
+            if (user.role !== 'warehouse_staff') { this.errorMsg = '该账户无仓库操作权限'; localStorage.removeItem('dyms_token'); return; }
+            this.user = user;
+            this.loggedIn = true;
+            this.loadTasks();
+            this.loadDocks();
+          } catch {
+            localStorage.removeItem('dyms_token');
+          }
+        },
 
-    init() {
-      if (this.token) {
-        this.fetchTasks();
-        this.fetchYard();
-      }
+        async login() {
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.credentials)
+            });
+            if (!res.ok) throw new Error('工号或密码错误');
+            const data = await res.json();
+            if (data.role !== 'warehouse_staff') throw new Error('该账户无仓库操作权限');
+            localStorage.setItem('dyms_token', data.access_token);
+            this.user = data;
+            this.loggedIn = true;
+            this.loadTasks();
+            this.loadDocks();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        logout() {
+          localStorage.removeItem('dyms_token');
+          this.loggedIn = false;
+          this.user = {};
+          this.credentials = { username: '', password: '' };
+        },
+
+        async loadTasks() {
+          try {
+            const res = await fetch('/api/warehouse/tasks/today', { headers: this.getHeaders() });
+            if (res.ok) {
+              const data = await res.json();
+              this.tasks = data.map(t => ({
+                ...t,
+                _assignDock: '',
+                _photos: { DOOR_OPEN: null, CLEAR_OUT: null },
+                _photoFiles: { DOOR_OPEN: null, CLEAR_OUT: null },
+                _yardSlot: ''
+              }));
+            }
+          } catch {}
+        },
+
+        async loadDocks() {
+          try {
+            const res = await fetch('/api/warehouse/docks', { headers: this.getHeaders() });
+            if (res.ok) this.availableDocks = await res.json();
+          } catch {}
+        },
+
+        async assignDock(task) {
+          if (!task._assignDock) return;
+          this.loading = true;
+          try {
+            const res = await fetch(`/api/appointments/${task.id}/assign-dock`, {
+              method: 'POST',
+              headers: this.getHeaders(),
+              body: JSON.stringify({ dock_code: task._assignDock })
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '分配失败'); }
+            this.successMsg = `已分配 Dock ${task._assignDock}`;
+            this.loadTasks();
+            this.loadDocks();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async startUnloading(task) {
+          this.loading = true;
+          try {
+            const res = await fetch(`/api/appointments/${task.id}/start-unloading`, {
+              method: 'POST',
+              headers: this.getHeaders()
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '操作失败'); }
+            this.successMsg = '开始卸货';
+            this.loadTasks();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        handleTaskPhoto(event, task, type) {
+          const file = event.target.files[0];
+          if (!file) return;
+          task._photoFiles[type] = file;
+          const reader = new FileReader();
+          reader.onload = (e) => { task._photos[type] = e.target.result; };
+          reader.readAsDataURL(file);
+        },
+
+        async completeUnloading(task) {
+          this.loading = true;
+          try {
+            const formData = new FormData();
+            formData.append('appointment_id', task.id);
+            if (task._photoFiles.DOOR_OPEN) formData.append('door_open', task._photoFiles.DOOR_OPEN);
+            if (task._photoFiles.CLEAR_OUT) formData.append('clear_out', task._photoFiles.CLEAR_OUT);
+
+            const res = await fetch(`/api/appointments/${task.id}/complete-unloading`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('dyms_token')}` },
+              body: formData
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '操作失败'); }
+            this.successMsg = '卸货完成';
+            this.loadTasks();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async moveContainer(task) {
+          this.loading = true;
+          try {
+            const res = await fetch(`/api/appointments/${task.id}/move-container`, {
+              method: 'POST',
+              headers: this.getHeaders(),
+              body: JSON.stringify({ yard_slot: task._yardSlot || null })
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '操作失败'); }
+            this.successMsg = '移柜完成';
+            this.loadTasks();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async loadYardInventory() {
+          try {
+            const res = await fetch('/api/warehouse/yard', { headers: this.getHeaders() });
+            if (res.ok) {
+              const data = await res.json();
+              this.yardItems = data.items || data;
+              this.yardSummary = data.summary || {
+                total: this.yardItems.length,
+                available: 0,
+                occupied: this.yardItems.length
+              };
+            }
+          } catch {}
+        },
+
+        async verifyContainer() {
+          if (!this.walkInput) return;
+          this.loading = true;
+          this.walkResult = null;
+          const container = this.walkInput.trim().toUpperCase();
+          try {
+            const res = await fetch(`/api/warehouse/yard/verify?container_number=${encodeURIComponent(container)}`, {
+              headers: this.getHeaders()
+            });
+            if (res.ok) {
+              this.walkResult = await res.json();
+            } else {
+              this.walkResult = { container_number: container, match: false, message: '系统中未找到该柜号' };
+            }
+            this.walkHistory.unshift({
+              container: container,
+              match: this.walkResult.match,
+              time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            });
+            this.walkInput = '';
+            this.$refs.walkInput?.focus();
+          } catch (e) {
+            this.walkResult = { container_number: container, match: false, message: '查询失败' };
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        formatTime(t) {
+          if (!t) return '-';
+          return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        },
+
+        taskStatusClass(s) {
+          const map = {
+            CHECKED_IN: 'bg-green-700 text-green-100',
+            DOCK_ASSIGNED: 'bg-purple-700 text-purple-100',
+            UNLOADING: 'bg-yellow-600 text-yellow-100',
+            UNLOAD_COMPLETE: 'bg-teal-700 text-teal-100',
+            COMPLETED: 'bg-gray-600 text-gray-200'
+          };
+          return map[s] || 'bg-gray-600 text-gray-200';
+        },
+
+        taskStatusLabel(s) {
+          const map = {
+            CHECKED_IN: '已签到',
+            DOCK_ASSIGNED: '已分配Dock',
+            UNLOADING: '卸货中',
+            UNLOAD_COMPLETE: '卸货完成',
+            COMPLETED: '已完成'
+          };
+          return map[s] || s;
+        }
+      };
     }
-  };
-}
-</script>
+  </script>
 </body>
 </html>
