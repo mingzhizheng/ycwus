@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DYMS - 货主门户 Shipper Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="shipperApp()" x-init="init()" x-cloak>
+
+  <!-- Login Screen -->
+  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-8">
+      <h1 class="text-3xl font-bold text-center text-blue-800 mb-2">DYMS 货主门户</h1>
+      <p class="text-center text-gray-500 mb-6">Shipper Portal</p>
+      <form @submit.prevent="login()">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">用户名 Username</label>
+          <input type="text" x-model="credentials.username" required
+                 class="w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:outline-none">
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">密码 Password</label>
+          <input type="password" x-model="credentials.password" required
+                 class="w-full border-2 rounded-xl px-4 py-3 focus:border-blue-500 focus:outline-none">
+        </div>
+        <button type="submit" :disabled="loading"
+                class="w-full bg-blue-600 text-white text-lg font-bold py-3 rounded-xl disabled:bg-gray-400">
+          <span x-show="!loading">登录 Login</span>
+          <span x-show="loading">登录中...</span>
+        </button>
+      </form>
+      <div x-show="errorMsg" class="mt-4 bg-red-100 text-red-700 rounded-lg p-3 text-center" x-text="errorMsg"></div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div x-show="loggedIn" class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <header class="bg-blue-800 text-white p-4 sticky top-0 z-40">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">DYMS 货主门户</h1>
+          <p class="text-blue-200 text-sm" x-text="'欢迎 ' + user.username"></p>
+        </div>
+        <button @click="logout()" class="bg-blue-700 px-4 py-2 rounded-lg text-sm hover:bg-blue-600">
+          退出 Logout
+        </button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="bg-white border-b flex sticky top-[72px] z-30">
+      <button @click="activeTab = 'asn'" :class="activeTab === 'asn' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-semibold border-b-2 transition-colors">
+        ASN管理
+      </button>
+      <button @click="activeTab = 'appointments'; loadAppointments()" :class="activeTab === 'appointments' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-semibold border-b-2 transition-colors">
+        预约列表
+      </button>
+      <button @click="activeTab = 'billing'; loadBilling()" :class="activeTab === 'billing' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500'"
+              class="flex-1 py-3 text-center font-semibold border-b-2 transition-colors">
+        费用明细
+      </button>
+    </nav>
+
+    <div class="p-4">
+
+      <!-- ASN Tab -->
+      <div x-show="activeTab === 'asn'" class="space-y-4">
+        <!-- Create ASN Form -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-lg font-bold mb-4">创建 ASN — Create ASN</h2>
+          <form @submit.prevent="createASN()" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">柜号 Container Number <span class="text-red-500">*</span></label>
+              <input type="text" x-model="asnForm.container_number" required placeholder="如 MEDU1234567"
+                     class="w-full border-2 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:outline-none uppercase">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">货物类型 Cargo Type <span class="text-red-500">*</span></label>
+              <div class="grid grid-cols-2 gap-3">
+                <button type="button" @click="asnForm.cargo_type = 'PALLETIZED'"
+                        :class="asnForm.cargo_type === 'PALLETIZED' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-600'"
+                        class="border-2 rounded-xl p-4 text-center font-semibold transition-colors">
+                  <div class="text-2xl mb-1">📦</div>
+                  <div>托盘装</div>
+                  <div class="text-xs">PALLETIZED</div>
+                </button>
+                <button type="button" @click="asnForm.cargo_type = 'FLOOR_LOAD'"
+                        :class="asnForm.cargo_type === 'FLOOR_LOAD' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-300 text-gray-600'"
+                        class="border-2 rounded-xl p-4 text-center font-semibold transition-colors">
+                  <div class="text-2xl mb-1">🏗️</div>
+                  <div>散装</div>
+                  <div class="text-xs">FLOOR LOAD</div>
+                </button>
+              </div>
+              <p x-show="asnSubmitted && !asnForm.cargo_type" class="text-red-500 text-sm mt-1">请选择货物类型</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">预计数量 Expected Qty</label>
+              <input type="number" x-model="asnForm.expected_qty" min="0" placeholder="件数"
+                     class="w-full border-2 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1">备注 Notes</label>
+              <textarea x-model="asnForm.notes" rows="2" placeholder="特殊要求..."
+                        class="w-full border-2 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:outline-none"></textarea>
+            </div>
+            <button type="submit" :disabled="loading"
+                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
+              <span x-show="!loading">提交 ASN — Submit</span>
+              <span x-show="loading">提交中...</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- ASN List -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold">ASN 列表</h2>
+            <button @click="loadASNs()" class="text-blue-600 text-sm font-semibold">刷新 Refresh</button>
+          </div>
+          <div x-show="asnList.length === 0" class="text-center text-gray-400 py-8">暂无 ASN 记录</div>
+          <div class="space-y-3">
+            <template x-for="asn in asnList" :key="asn.id">
+              <div class="border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-bold text-lg" x-text="asn.container_number"></span>
+                  <span class="px-2 py-1 rounded-full text-xs font-bold"
+                        :class="asn.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'"
+                        x-text="asn.status"></span>
+                </div>
+                <div class="text-sm text-gray-600 space-y-1">
+                  <div>类型: <span x-text="asn.cargo_type" class="font-semibold"></span></div>
+                  <div x-show="asn.expected_qty">数量: <span x-text="asn.expected_qty" class="font-semibold"></span></div>
+                  <div x-show="asn.notes">备注: <span x-text="asn.notes"></span></div>
+                  <div class="text-xs text-gray-400" x-text="'创建于 ' + formatTime(asn.created_at)"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appointments Tab -->
+      <div x-show="activeTab === 'appointments'" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">预约列表 Appointments</h2>
+          <button @click="loadAppointments()" class="text-blue-600 text-sm font-semibold">刷新 Refresh</button>
+        </div>
+        <div x-show="appointments.length === 0" class="bg-white rounded-xl p-8 text-center text-gray-400">暂无预约记录</div>
+        <template x-for="appt in appointments" :key="appt.id">
+          <div class="bg-white rounded-xl shadow p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-bold text-lg" x-text="appt.container_number"></span>
+              <span class="px-3 py-1 rounded-full text-xs font-bold" :class="statusClass(appt.status)" x-text="appt.status"></span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+              <div>预约时间: <span class="font-semibold" x-text="formatTime(appt.scheduled_time)"></span></div>
+              <div>模式: <span class="font-semibold" x-text="appt.delivery_mode"></span></div>
+              <div x-show="appt.dock_code">Dock: <span class="font-bold text-green-700 text-lg" x-text="appt.dock_code"></span></div>
+              <div>承运商: <span class="font-semibold" x-text="appt.carrier_name || '-'"></span></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Billing Tab -->
+      <div x-show="activeTab === 'billing'" class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-bold">费用明细 Billing</h2>
+          <button @click="loadBilling()" class="text-blue-600 text-sm font-semibold">刷新 Refresh</button>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-white rounded-xl shadow p-4 text-center">
+            <div class="text-sm text-gray-500">总金额</div>
+            <div class="text-xl font-bold text-blue-700" x-text="'$' + billingSummary.total.toFixed(2)"></div>
+          </div>
+          <div class="bg-white rounded-xl shadow p-4 text-center">
+            <div class="text-sm text-gray-500">已付</div>
+            <div class="text-xl font-bold text-green-700" x-text="'$' + billingSummary.paid.toFixed(2)"></div>
+          </div>
+          <div class="bg-white rounded-xl shadow p-4 text-center">
+            <div class="text-sm text-gray-500">待付</div>
+            <div class="text-xl font-bold text-red-700" x-text="'$' + billingSummary.pending.toFixed(2)"></div>
+          </div>
+        </div>
+
+        <div x-show="billingEvents.length === 0" class="bg-white rounded-xl p-8 text-center text-gray-400">暂无费用记录</div>
+        <template x-for="evt in billingEvents" :key="evt.id">
+          <div class="bg-white rounded-xl shadow p-4">
+            <div class="flex items-center justify-between mb-1">
+              <span class="font-semibold" x-text="evt.description || evt.event_type"></span>
+              <span class="font-bold text-lg" :class="evt.amount >= 0 ? 'text-red-600' : 'text-green-600'"
+                    x-text="'$' + Math.abs(evt.amount).toFixed(2)"></span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-gray-500" x-text="evt.event_type"></span>
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold"
+                    :class="evt.status === 'PAID' ? 'bg-green-100 text-green-700' : evt.status === 'INVOICED' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'"
+                    x-text="evt.status"></span>
+            </div>
+            <div class="text-xs text-gray-400 mt-1" x-text="formatTime(evt.created_at)"></div>
+          </div>
+        </template>
+      </div>
+
+    </div>
+
+    <!-- Notifications -->
+    <div x-show="successMsg" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-green-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="successMsg"
+         x-init="$watch('successMsg', v => { if(v) setTimeout(() => successMsg = '', 3000) })"></div>
+    <div x-show="errorMsg && loggedIn" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="errorMsg"
+         x-init="$watch('errorMsg', v => { if(v) setTimeout(() => errorMsg = '', 5000) })"></div>
+  </div>
+
+  <script>
+    function shipperApp() {
+      return {
+        loggedIn: false,
+        loading: false,
+        user: {},
+        credentials: { username: '', password: '' },
+        activeTab: 'asn',
+        errorMsg: '',
+        successMsg: '',
+        asnSubmitted: false,
+        asnForm: { container_number: '', cargo_type: '', expected_qty: '', notes: '' },
+        asnList: [],
+        appointments: [],
+        billingEvents: [],
+        billingSummary: { total: 0, paid: 0, pending: 0 },
+
+        init() {
+          const token = localStorage.getItem('dyms_token');
+          if (token) {
+            this.verifyToken(token);
+          }
+        },
+
+        getHeaders() {
+          return {
+            'Authorization': `Bearer ${localStorage.getItem('dyms_token')}`,
+            'Content-Type': 'application/json'
+          };
+        },
+
+        async verifyToken(token) {
+          try {
+            const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            const user = await res.json();
+            if (user.role !== 'shipper') { this.errorMsg = '该账户无货主权限'; localStorage.removeItem('dyms_token'); return; }
+            this.user = user;
+            this.loggedIn = true;
+            this.loadASNs();
+          } catch {
+            localStorage.removeItem('dyms_token');
+          }
+        },
+
+        async login() {
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.credentials)
+            });
+            if (!res.ok) throw new Error('用户名或密码错误');
+            const data = await res.json();
+            if (data.role !== 'shipper') throw new Error('该账户无货主权限');
+            localStorage.setItem('dyms_token', data.access_token);
+            this.user = data;
+            this.loggedIn = true;
+            this.loadASNs();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        logout() {
+          localStorage.removeItem('dyms_token');
+          this.loggedIn = false;
+          this.user = {};
+          this.credentials = { username: '', password: '' };
+        },
+
+        async createASN() {
+          this.asnSubmitted = true;
+          if (!this.asnForm.container_number || !this.asnForm.cargo_type) {
+            this.errorMsg = '请填写柜号并选择货物类型';
+            return;
+          }
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const payload = {
+              container_number: this.asnForm.container_number.trim().toUpperCase(),
+              cargo_type: this.asnForm.cargo_type,
+              expected_qty: this.asnForm.expected_qty ? parseInt(this.asnForm.expected_qty) : null,
+              notes: this.asnForm.notes || null
+            };
+            const res = await fetch('/api/asn', {
+              method: 'POST',
+              headers: this.getHeaders(),
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'ASN创建失败'); }
+            this.successMsg = 'ASN 创建成功';
+            this.asnForm = { container_number: '', cargo_type: '', expected_qty: '', notes: '' };
+            this.asnSubmitted = false;
+            this.loadASNs();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async loadASNs() {
+          try {
+            const res = await fetch('/api/asn', { headers: this.getHeaders() });
+            if (res.ok) this.asnList = await res.json();
+          } catch {}
+        },
+
+        async loadAppointments() {
+          try {
+            const res = await fetch('/api/appointments?role=shipper', { headers: this.getHeaders() });
+            if (res.ok) this.appointments = await res.json();
+          } catch {}
+        },
+
+        async loadBilling() {
+          try {
+            const res = await fetch('/api/billing/events', { headers: this.getHeaders() });
+            if (res.ok) {
+              this.billingEvents = await res.json();
+              this.billingSummary = {
+                total: this.billingEvents.reduce((s, e) => s + Math.abs(e.amount), 0),
+                paid: this.billingEvents.filter(e => e.status === 'PAID').reduce((s, e) => s + Math.abs(e.amount), 0),
+                pending: this.billingEvents.filter(e => e.status !== 'PAID').reduce((s, e) => s + Math.abs(e.amount), 0)
+              };
+            }
+          } catch {}
+        },
+
+        formatTime(t) {
+          if (!t) return '-';
+          return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        },
+
+        statusClass(s) {
+          const map = {
+            SCHEDULED: 'bg-blue-100 text-blue-800',
+            CHECKED_IN: 'bg-green-100 text-green-800',
+            DOCK_ASSIGNED: 'bg-purple-100 text-purple-800',
+            UNLOADING: 'bg-yellow-100 text-yellow-800',
+            UNLOAD_COMPLETE: 'bg-teal-100 text-teal-800',
+            COMPLETED: 'bg-gray-100 text-gray-800',
+            CANCELLED: 'bg-red-100 text-red-800'
+          };
+          return map[s] || 'bg-gray-100 text-gray-800';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

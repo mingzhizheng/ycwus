@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DYMS - 承运商门户 Carrier Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="carrierApp()" x-init="init()" x-cloak>
+
+  <!-- Login Screen -->
+  <div x-show="!loggedIn" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-8">
+      <h1 class="text-3xl font-bold text-center text-indigo-800 mb-2">DYMS 承运商门户</h1>
+      <p class="text-center text-gray-500 mb-6">Carrier Portal</p>
+      <form @submit.prevent="login()">
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">用户名 Username</label>
+          <input type="text" x-model="credentials.username" required
+                 class="w-full border-2 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none">
+        </div>
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-gray-700 mb-1">密码 Password</label>
+          <input type="password" x-model="credentials.password" required
+                 class="w-full border-2 rounded-xl px-4 py-3 focus:border-indigo-500 focus:outline-none">
+        </div>
+        <button type="submit" :disabled="loading"
+                class="w-full bg-indigo-600 text-white text-lg font-bold py-3 rounded-xl disabled:bg-gray-400">
+          <span x-show="!loading">登录 Login</span>
+          <span x-show="loading">登录中...</span>
+        </button>
+      </form>
+      <div x-show="errorMsg" class="mt-4 bg-red-100 text-red-700 rounded-lg p-3 text-center" x-text="errorMsg"></div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div x-show="loggedIn">
+
+    <!-- Header -->
+    <header class="bg-indigo-800 text-white p-4 sticky top-0 z-40">
+      <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-bold">DYMS 承运商门户</h1>
+          <p class="text-indigo-200 text-sm" x-text="'欢迎 ' + user.username"></p>
+        </div>
+        <button @click="logout()" class="bg-indigo-700 px-4 py-2 rounded-lg text-sm hover:bg-indigo-600">退出</button>
+      </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto p-4 space-y-4">
+
+      <!-- New Appointment Wizard -->
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <button @click="showWizard = !showWizard" class="w-full flex items-center justify-between p-4 bg-indigo-50">
+          <span class="text-lg font-bold text-indigo-800">+ 新建预约 New Appointment</span>
+          <svg :class="showWizard && 'rotate-180'" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+
+        <div x-show="showWizard" x-transition class="p-6">
+          <!-- Wizard Steps Indicator -->
+          <div class="flex items-center justify-center mb-6 space-x-2">
+            <template x-for="(label, idx) in ['柜号/ASN', '模式', '时间', '确认']" :key="idx">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                     :class="wizardStep > idx ? 'bg-green-500 text-white' : wizardStep === idx ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'"
+                     x-text="idx + 1"></div>
+                <span class="ml-1 text-xs hidden sm:inline" :class="wizardStep === idx ? 'text-indigo-700 font-bold' : 'text-gray-400'" x-text="label"></span>
+                <div x-show="idx < 3" class="w-6 h-0.5 mx-1" :class="wizardStep > idx ? 'bg-green-500' : 'bg-gray-200'"></div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Step 0: Container / ASN -->
+          <div x-show="wizardStep === 0" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold mb-1">柜号 Container # 或 ASN 编号</label>
+              <input type="text" x-model="newAppt.reference" placeholder="MEDU1234567 或 ASN-XXXX"
+                     class="w-full border-2 rounded-xl px-4 py-3 text-lg focus:border-indigo-500 focus:outline-none uppercase">
+            </div>
+            <button @click="validateReference()" :disabled="!newAppt.reference || loading"
+                    class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
+              <span x-show="!loading">下一步 Next</span>
+              <span x-show="loading">查询中...</span>
+            </button>
+            <div x-show="newAppt.refInfo" class="bg-green-50 border border-green-200 rounded-lg p-3">
+              <p class="text-green-800 font-semibold" x-text="'已匹配: ' + (newAppt.refInfo.container_number || newAppt.refInfo.asn_number)"></p>
+              <p class="text-sm text-green-600" x-text="'货物类型: ' + (newAppt.refInfo.cargo_type || '-')"></p>
+            </div>
+          </div>
+
+          <!-- Step 1: Delivery Mode -->
+          <div x-show="wizardStep === 1" class="space-y-4">
+            <label class="block text-sm font-semibold mb-2">选择卸货模式 Select Delivery Mode</label>
+            <div class="grid grid-cols-2 gap-4">
+              <button @click="newAppt.delivery_mode = 'LIVE'"
+                      :class="newAppt.delivery_mode === 'LIVE' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300'"
+                      class="border-2 rounded-xl p-6 text-center transition-colors">
+                <div class="text-3xl mb-2">🚛</div>
+                <div class="font-bold text-lg">LIVE 卸货</div>
+                <div class="text-sm text-gray-500 mt-1">司机等待卸货</div>
+              </button>
+              <button @click="newAppt.delivery_mode = 'DROP'"
+                      :class="newAppt.delivery_mode === 'DROP' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300'"
+                      class="border-2 rounded-xl p-6 text-center transition-colors">
+                <div class="text-3xl mb-2">📦</div>
+                <div class="font-bold text-lg">DROP 落柜</div>
+                <div class="text-sm text-gray-500 mt-1">落柜后离开</div>
+              </button>
+            </div>
+            <div class="flex gap-3">
+              <button @click="wizardStep = 0" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">返回</button>
+              <button @click="newAppt.delivery_mode && (wizardStep = 2, loadTimeSlots())" :disabled="!newAppt.delivery_mode"
+                      class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">下一步</button>
+            </div>
+          </div>
+
+          <!-- Step 2: Time Slot -->
+          <div x-show="wizardStep === 2" class="space-y-4">
+            <label class="block text-sm font-semibold mb-2">选择时间段 Select Time Slot</label>
+            <div x-show="timeSlots.length === 0" class="text-center text-gray-400 py-4">加载中...</div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+              <template x-for="slot in timeSlots" :key="slot.start">
+                <button @click="!slot.full && (newAppt.time_slot = slot)"
+                        :disabled="slot.full"
+                        :class="newAppt.time_slot?.start === slot.start ? 'border-indigo-600 bg-indigo-50' : slot.full ? 'border-gray-200 bg-gray-100 opacity-50' : 'border-gray-300'"
+                        class="border-2 rounded-lg p-3 text-center text-sm transition-colors">
+                  <div class="font-bold" x-text="formatSlotTime(slot.start)"></div>
+                  <div class="text-xs" :class="slot.full ? 'text-red-500' : 'text-green-600'"
+                       x-text="slot.full ? '已满' : slot.available + ' 可用'"></div>
+                </button>
+              </template>
+            </div>
+            <div class="flex gap-3">
+              <button @click="wizardStep = 1" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">返回</button>
+              <button @click="newAppt.time_slot && (wizardStep = 3)" :disabled="!newAppt.time_slot"
+                      class="flex-1 bg-indigo-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">下一步</button>
+            </div>
+          </div>
+
+          <!-- Step 3: Confirm -->
+          <div x-show="wizardStep === 3" class="space-y-4">
+            <h3 class="text-lg font-bold mb-2">确认预约 Confirm Appointment</h3>
+            <div class="bg-gray-50 rounded-xl p-4 space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">柜号/ASN</span>
+                <span class="font-bold" x-text="newAppt.reference"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">模式 Mode</span>
+                <span class="font-bold" x-text="newAppt.delivery_mode"></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">时间 Time</span>
+                <span class="font-bold" x-text="newAppt.time_slot ? formatSlotTime(newAppt.time_slot.start) : '-'"></span>
+              </div>
+            </div>
+
+            <!-- Penalty Warning -->
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4">
+              <p class="text-yellow-800 font-bold text-sm">
+                ⚠ 注意: 预约确认后，24小时内取消或未到 (No-Show) 将收取 $50 罚款。
+              </p>
+              <p class="text-yellow-700 text-xs mt-1">
+                Warning: Cancellation within 24h or no-show incurs a $50 penalty fee.
+              </p>
+            </div>
+
+            <div class="flex gap-3">
+              <button @click="wizardStep = 2" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">返回</button>
+              <button @click="submitAppointment()" :disabled="loading"
+                      class="flex-1 bg-green-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
+                <span x-show="!loading">确认预约 Confirm</span>
+                <span x-show="loading">提交中...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Appointments -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-bold">我的预约 My Appointments</h2>
+          <button @click="loadAppointments()" class="text-indigo-600 text-sm font-semibold">刷新 Refresh</button>
+        </div>
+
+        <div x-show="appointments.length === 0" class="bg-white rounded-xl p-8 text-center text-gray-400">暂无预约记录</div>
+
+        <div class="space-y-3">
+          <template x-for="appt in appointments" :key="appt.id">
+            <div class="bg-white rounded-xl shadow p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-bold text-lg" x-text="appt.container_number"></span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold" :class="statusClass(appt.status)" x-text="appt.status"></span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
+                <div>时间: <span class="font-semibold" x-text="formatTime(appt.scheduled_time)"></span></div>
+                <div>模式: <span class="font-semibold" x-text="appt.delivery_mode"></span></div>
+                <div x-show="appt.dock_code">Dock: <span class="font-bold text-green-700 text-lg" x-text="appt.dock_code"></span></div>
+              </div>
+
+              <!-- No-show penalty warning for upcoming appointments -->
+              <div x-show="appt.status === 'SCHEDULED' && isWithin24h(appt.scheduled_time)"
+                   class="bg-red-50 border border-red-300 rounded-lg p-2 mb-3">
+                <p class="text-red-700 text-xs font-bold">
+                  ⚠ 距预约不足24小时，取消将收取 $50 罚款 — Cancellation will incur $50 penalty
+                </p>
+              </div>
+
+              <!-- Cancel Button -->
+              <div x-show="appt.status === 'SCHEDULED'" class="flex justify-end">
+                <button @click="cancelAppointment(appt)"
+                        class="bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-red-200">
+                  取消预约 Cancel
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Notifications -->
+    <div x-show="successMsg" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-green-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="successMsg"
+         x-init="$watch('successMsg', v => { if(v) setTimeout(() => successMsg = '', 3000) })"></div>
+    <div x-show="errorMsg && loggedIn" x-transition class="fixed bottom-4 left-4 right-4 max-w-md mx-auto bg-red-600 text-white rounded-xl p-4 text-center font-bold z-50"
+         x-text="errorMsg"
+         x-init="$watch('errorMsg', v => { if(v) setTimeout(() => errorMsg = '', 5000) })"></div>
+  </div>
+
+  <!-- Cancel Confirmation Modal -->
+  <div x-show="showCancelModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6">
+      <h3 class="text-xl font-bold text-red-700 mb-3">确认取消 Confirm Cancellation</h3>
+      <p class="text-gray-700 mb-2">确定要取消以下预约吗？</p>
+      <p class="font-bold mb-3" x-text="cancelTarget?.container_number"></p>
+      <div x-show="cancelTarget && isWithin24h(cancelTarget?.scheduled_time)"
+           class="bg-red-50 border-2 border-red-400 rounded-xl p-3 mb-4">
+        <p class="text-red-800 font-bold">⚠ 距预约不足24小时</p>
+        <p class="text-red-700 text-lg font-bold">将收取 $50 罚款 — $50 penalty will apply</p>
+      </div>
+      <div class="flex gap-3">
+        <button @click="showCancelModal = false; cancelTarget = null" class="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-xl">
+          返回 Back
+        </button>
+        <button @click="confirmCancel()" :disabled="loading" class="flex-1 bg-red-600 text-white font-bold py-3 rounded-xl disabled:bg-gray-400">
+          确认取消
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function carrierApp() {
+      return {
+        loggedIn: false,
+        loading: false,
+        user: {},
+        credentials: { username: '', password: '' },
+        errorMsg: '',
+        successMsg: '',
+        showWizard: false,
+        wizardStep: 0,
+        newAppt: { reference: '', refInfo: null, delivery_mode: '', time_slot: null },
+        timeSlots: [],
+        appointments: [],
+        showCancelModal: false,
+        cancelTarget: null,
+
+        init() {
+          const token = localStorage.getItem('dyms_token');
+          if (token) this.verifyToken(token);
+        },
+
+        getHeaders() {
+          return {
+            'Authorization': `Bearer ${localStorage.getItem('dyms_token')}`,
+            'Content-Type': 'application/json'
+          };
+        },
+
+        async verifyToken(token) {
+          try {
+            const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error();
+            const user = await res.json();
+            if (user.role !== 'carrier') { this.errorMsg = '该账户无承运商权限'; localStorage.removeItem('dyms_token'); return; }
+            this.user = user;
+            this.loggedIn = true;
+            this.loadAppointments();
+          } catch {
+            localStorage.removeItem('dyms_token');
+          }
+        },
+
+        async login() {
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(this.credentials)
+            });
+            if (!res.ok) throw new Error('用户名或密码错误');
+            const data = await res.json();
+            if (data.role !== 'carrier') throw new Error('该账户无承运商权限');
+            localStorage.setItem('dyms_token', data.access_token);
+            this.user = data;
+            this.loggedIn = true;
+            this.loadAppointments();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        logout() {
+          localStorage.removeItem('dyms_token');
+          this.loggedIn = false;
+          this.user = {};
+          this.credentials = { username: '', password: '' };
+        },
+
+        async validateReference() {
+          if (!this.newAppt.reference) return;
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const ref = this.newAppt.reference.trim().toUpperCase();
+            const res = await fetch(`/api/appointments/validate-reference?ref=${encodeURIComponent(ref)}`, {
+              headers: this.getHeaders()
+            });
+            if (!res.ok) throw new Error('未找到匹配的柜号或 ASN');
+            this.newAppt.refInfo = await res.json();
+            this.wizardStep = 1;
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async loadTimeSlots() {
+          this.timeSlots = [];
+          try {
+            const res = await fetch(`/api/appointments/time-slots?mode=${this.newAppt.delivery_mode}`, {
+              headers: this.getHeaders()
+            });
+            if (res.ok) this.timeSlots = await res.json();
+          } catch {}
+        },
+
+        async submitAppointment() {
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const payload = {
+              container_number: this.newAppt.refInfo?.container_number || this.newAppt.reference.trim().toUpperCase(),
+              asn_id: this.newAppt.refInfo?.asn_id || null,
+              delivery_mode: this.newAppt.delivery_mode,
+              scheduled_time: this.newAppt.time_slot.start
+            };
+            const res = await fetch('/api/appointments', {
+              method: 'POST',
+              headers: this.getHeaders(),
+              body: JSON.stringify(payload)
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '预约创建失败'); }
+            this.successMsg = '预约创建成功！';
+            this.showWizard = false;
+            this.resetWizard();
+            this.loadAppointments();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        resetWizard() {
+          this.wizardStep = 0;
+          this.newAppt = { reference: '', refInfo: null, delivery_mode: '', time_slot: null };
+          this.timeSlots = [];
+        },
+
+        async loadAppointments() {
+          try {
+            const res = await fetch('/api/appointments?role=carrier', { headers: this.getHeaders() });
+            if (res.ok) this.appointments = await res.json();
+          } catch {}
+        },
+
+        cancelAppointment(appt) {
+          this.cancelTarget = appt;
+          this.showCancelModal = true;
+        },
+
+        async confirmCancel() {
+          if (!this.cancelTarget) return;
+          this.loading = true;
+          try {
+            const res = await fetch(`/api/appointments/${this.cancelTarget.id}/cancel`, {
+              method: 'POST',
+              headers: this.getHeaders()
+            });
+            if (!res.ok) { const e = await res.json(); throw new Error(e.detail || '取消失败'); }
+            const result = await res.json();
+            this.successMsg = result.penalty ? '预约已取消，已产生 $50 罚款' : '预约已取消';
+            this.showCancelModal = false;
+            this.cancelTarget = null;
+            this.loadAppointments();
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        isWithin24h(time) {
+          if (!time) return false;
+          const diff = new Date(time).getTime() - Date.now();
+          return diff > 0 && diff < 24 * 60 * 60 * 1000;
+        },
+
+        formatTime(t) {
+          if (!t) return '-';
+          return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        },
+
+        formatSlotTime(t) {
+          if (!t) return '-';
+          return new Date(t).toLocaleString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        statusClass(s) {
+          const map = {
+            SCHEDULED: 'bg-blue-100 text-blue-800',
+            CHECKED_IN: 'bg-green-100 text-green-800',
+            DOCK_ASSIGNED: 'bg-purple-100 text-purple-800',
+            UNLOADING: 'bg-yellow-100 text-yellow-800',
+            UNLOAD_COMPLETE: 'bg-teal-100 text-teal-800',
+            COMPLETED: 'bg-gray-100 text-gray-800',
+            CANCELLED: 'bg-red-100 text-red-800',
+            NO_SHOW: 'bg-red-200 text-red-900'
+          };
+          return map[s] || 'bg-gray-100 text-gray-800';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

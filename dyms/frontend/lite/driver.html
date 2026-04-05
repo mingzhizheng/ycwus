@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>DYMS - 司机签到 Driver Check-in</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="driverApp()" x-init="init()" x-cloak>
+
+  <!-- Offline Banner -->
+  <div x-show="!online" class="bg-red-600 text-white text-center py-2 text-lg font-bold sticky top-0 z-50">
+    ⚠ 离线模式 Offline — 数据将在恢复连接后自动同步
+  </div>
+
+  <!-- Safety Notice Modal -->
+  <div x-show="showSafetyNotice" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-2xl font-bold text-red-600 mb-4 text-center">安全须知 Safety Notice</h2>
+      <div class="space-y-3 text-base text-gray-800 mb-6">
+        <p class="font-semibold">进入仓库区域前，请仔细阅读以下安全规定：</p>
+        <ul class="list-disc pl-5 space-y-2">
+          <li>必须穿戴安全背心和安全鞋 — Safety vest and safety shoes required</li>
+          <li>仓库区域限速 5 英里/小时 — Speed limit 5 MPH in yard</li>
+          <li>禁止在装卸区吸烟 — No smoking in dock area</li>
+          <li>服从仓库工作人员指挥 — Follow warehouse staff instructions</li>
+          <li>车辆必须熄火并拉好手刹 — Engine off, parking brake engaged</li>
+          <li>禁止未经授权进入仓库内部 — No unauthorized warehouse entry</li>
+          <li>紧急情况请拨打 911 — Call 911 in emergencies</li>
+        </ul>
+        <p class="font-semibold text-red-600">违反安全规定将被拒绝入场！</p>
+      </div>
+      <button @click="acknowledgeSafety()" class="w-full bg-green-600 text-white text-xl font-bold py-4 rounded-xl active:bg-green-700">
+        我已阅读并同意 I Acknowledge
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-lg mx-auto p-4">
+
+    <!-- Header -->
+    <div class="text-center mb-6">
+      <h1 class="text-3xl font-bold text-blue-800">DYMS 司机签到</h1>
+      <p class="text-gray-500">Driver Check-in</p>
+    </div>
+
+    <!-- Step 1: Entry -->
+    <div x-show="step === 'entry'" class="space-y-4">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-bold mb-4">输入柜号 Enter Container #</h2>
+        <input type="text" x-model="containerNumber" placeholder="如 MEDU1234567"
+               class="w-full text-xl border-2 border-gray-300 rounded-xl px-4 py-4 focus:border-blue-500 focus:outline-none uppercase"
+               @keyup.enter="lookupContainer()">
+        <button @click="lookupContainer()" :disabled="!containerNumber || loading"
+                class="w-full mt-4 bg-blue-600 text-white text-xl font-bold py-4 rounded-xl disabled:bg-gray-400 active:bg-blue-700">
+          <span x-show="!loading">查询 Look Up</span>
+          <span x-show="loading">查询中...</span>
+        </button>
+      </div>
+      <div x-show="errorMsg" class="bg-red-100 border border-red-400 text-red-700 rounded-xl p-4 text-lg" x-text="errorMsg"></div>
+    </div>
+
+    <!-- Step 2: Appointment Info -->
+    <div x-show="step === 'info'" class="space-y-4">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-bold mb-4">预约信息 Appointment Info</h2>
+        <div class="space-y-3">
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-gray-600">柜号 Container</span>
+            <span class="font-bold text-lg" x-text="appointment.container_number"></span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-gray-600">预约时间 Time</span>
+            <span class="font-semibold" x-text="formatTime(appointment.scheduled_time)"></span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-gray-600">模式 Mode</span>
+            <span class="font-semibold" x-text="appointment.delivery_mode"></span>
+          </div>
+          <div class="flex justify-between border-b pb-2">
+            <span class="text-gray-600">状态 Status</span>
+            <span class="px-3 py-1 rounded-full text-sm font-bold"
+                  :class="statusClass(appointment.status)" x-text="appointment.status"></span>
+          </div>
+          <div x-show="appointment.dock_code" class="flex justify-between border-b pb-2">
+            <span class="text-gray-600">Dock</span>
+            <span class="font-bold text-2xl text-green-700" x-text="appointment.dock_code"></span>
+          </div>
+        </div>
+      </div>
+      <button @click="step = 'photos'" class="w-full bg-blue-600 text-white text-xl font-bold py-4 rounded-xl active:bg-blue-700">
+        下一步：拍照 Next: Take Photos
+      </button>
+      <button @click="step = 'entry'" class="w-full bg-gray-300 text-gray-700 text-lg py-3 rounded-xl">
+        返回 Back
+      </button>
+    </div>
+
+    <!-- Step 3: Photo Upload -->
+    <div x-show="step === 'photos'" class="space-y-4">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-bold mb-4">拍照上传 Photo Upload</h2>
+
+        <!-- Truck Rear Photo -->
+        <div class="mb-6">
+          <label class="block text-lg font-semibold mb-2">车尾照片 Truck Rear <span class="text-red-500">*</span></label>
+          <div x-show="!photos.TRUCK_REAR" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+            <label class="cursor-pointer">
+              <div class="text-5xl mb-2">📷</div>
+              <div class="text-lg text-blue-600 font-bold">点击拍照 Tap to Capture</div>
+              <input type="file" accept="image/*" capture="environment" class="hidden"
+                     @change="handlePhoto($event, 'TRUCK_REAR')">
+            </label>
+          </div>
+          <div x-show="photos.TRUCK_REAR" class="relative">
+            <img :src="photos.TRUCK_REAR" class="w-full rounded-xl">
+            <button @click="photos.TRUCK_REAR = null" class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 text-xl font-bold">✕</button>
+          </div>
+        </div>
+
+        <!-- Seal Photo -->
+        <div class="mb-4">
+          <label class="block text-lg font-semibold mb-2">铅封照片 Seal Photo <span class="text-red-500">*</span></label>
+          <div x-show="!photos.SEAL_PHOTO" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+            <label class="cursor-pointer">
+              <div class="text-5xl mb-2">📷</div>
+              <div class="text-lg text-blue-600 font-bold">点击拍照 Tap to Capture</div>
+              <input type="file" accept="image/*" capture="environment" class="hidden"
+                     @change="handlePhoto($event, 'SEAL_PHOTO')">
+            </label>
+          </div>
+          <div x-show="photos.SEAL_PHOTO" class="relative">
+            <img :src="photos.SEAL_PHOTO" class="w-full rounded-xl">
+            <button @click="photos.SEAL_PHOTO = null" class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 text-xl font-bold">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <button @click="confirmCheckin()" :disabled="!photos.TRUCK_REAR || !photos.SEAL_PHOTO || loading"
+              class="w-full bg-green-600 text-white text-xl font-bold py-4 rounded-xl disabled:bg-gray-400 active:bg-green-700">
+        <span x-show="!loading">确认签到 Confirm Check-in</span>
+        <span x-show="loading">提交中...</span>
+      </button>
+      <button @click="step = 'info'" class="w-full bg-gray-300 text-gray-700 text-lg py-3 rounded-xl">
+        返回 Back
+      </button>
+    </div>
+
+    <!-- Step 4: Done -->
+    <div x-show="step === 'done'" class="space-y-4 text-center">
+      <div class="bg-green-50 rounded-2xl shadow p-8">
+        <div class="text-6xl mb-4">✅</div>
+        <h2 class="text-2xl font-bold text-green-700 mb-2">签到成功！</h2>
+        <p class="text-lg text-gray-600">Check-in Complete</p>
+        <div x-show="appointment.dock_code" class="mt-4 bg-green-100 rounded-xl p-4">
+          <p class="text-lg">请前往 Please proceed to</p>
+          <p class="text-5xl font-bold text-green-800 mt-2" x-text="appointment.dock_code"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exception Report Button (always visible after safety ack) -->
+    <div x-show="safetyAcked && step !== 'exception'" class="mt-6">
+      <button @click="step = 'exception'" class="w-full bg-red-600 text-white text-xl font-bold py-4 rounded-xl active:bg-red-700 border-4 border-red-800">
+        🚨 报告异常 Report Exception
+      </button>
+    </div>
+
+    <!-- Exception Report Form -->
+    <div x-show="step === 'exception'" class="space-y-4">
+      <div class="bg-red-50 rounded-2xl shadow p-6 border-2 border-red-300">
+        <h2 class="text-xl font-bold text-red-700 mb-4">异常报告 Exception Report</h2>
+        <div class="mb-4">
+          <label class="block text-lg font-semibold mb-2">异常类型 Type</label>
+          <select x-model="exception.type" class="w-full text-lg border-2 rounded-xl px-4 py-3">
+            <option value="">选择类型...</option>
+            <option value="SEAL_MISMATCH">铅封不符 Seal Mismatch</option>
+            <option value="DAMAGE">货损 Damage</option>
+            <option value="WRONG_CONTAINER">柜号错误 Wrong Container</option>
+            <option value="SAFETY_ISSUE">安全问题 Safety Issue</option>
+            <option value="OTHER">其他 Other</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="block text-lg font-semibold mb-2">描述 Description</label>
+          <textarea x-model="exception.description" rows="3" placeholder="请描述异常情况..."
+                    class="w-full text-lg border-2 rounded-xl px-4 py-3"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="block text-lg font-semibold mb-2">异常照片 Evidence Photo <span class="text-red-500">*</span></label>
+          <div x-show="!exception.photo" class="border-2 border-dashed border-red-300 rounded-xl p-8 text-center">
+            <label class="cursor-pointer">
+              <div class="text-5xl mb-2">📷</div>
+              <div class="text-lg text-red-600 font-bold">必须拍照 Photo Required</div>
+              <input type="file" accept="image/*" capture="environment" class="hidden"
+                     @change="handleExceptionPhoto($event)">
+            </label>
+          </div>
+          <div x-show="exception.photo" class="relative">
+            <img :src="exception.photo" class="w-full rounded-xl">
+            <button @click="exception.photo = null" class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-10 h-10 text-xl font-bold">✕</button>
+          </div>
+        </div>
+        <button @click="submitException()" :disabled="!exception.type || !exception.photo || loading"
+                class="w-full bg-red-600 text-white text-xl font-bold py-4 rounded-xl disabled:bg-gray-400 active:bg-red-700">
+          <span x-show="!loading">提交异常报告 Submit Report</span>
+          <span x-show="loading">提交中...</span>
+        </button>
+        <button @click="step = appointment.id ? 'info' : 'entry'" class="w-full mt-3 bg-gray-300 text-gray-700 text-lg py-3 rounded-xl">
+          取消 Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Offline Queue Indicator -->
+    <div x-show="offlineQueue.length > 0" class="mt-4 bg-yellow-100 border border-yellow-400 rounded-xl p-4 text-center">
+      <p class="text-lg font-bold text-yellow-800">
+        待同步 Pending Sync: <span x-text="offlineQueue.length"></span> 项
+      </p>
+      <button x-show="online" @click="syncOfflineQueue()" class="mt-2 bg-yellow-500 text-white px-6 py-2 rounded-lg font-bold">
+        立即同步 Sync Now
+      </button>
+    </div>
+
+    <div x-show="errorMsg && step !== 'entry'" class="mt-4 bg-red-100 border border-red-400 text-red-700 rounded-xl p-4 text-lg" x-text="errorMsg"></div>
+    <div x-show="successMsg" class="mt-4 bg-green-100 border border-green-400 text-green-700 rounded-xl p-4 text-lg" x-text="successMsg"></div>
+  </div>
+
+  <script>
+    function driverApp() {
+      return {
+        step: 'entry',
+        showSafetyNotice: false,
+        safetyAcked: false,
+        loading: false,
+        online: navigator.onLine,
+        containerNumber: '',
+        appointment: {},
+        photos: { TRUCK_REAR: null, SEAL_PHOTO: null },
+        photoFiles: { TRUCK_REAR: null, SEAL_PHOTO: null },
+        exception: { type: '', description: '', photo: null, photoFile: null },
+        errorMsg: '',
+        successMsg: '',
+        offlineQueue: [],
+        tokenParam: null,
+
+        async init() {
+          window.addEventListener('online', () => { this.online = true; this.syncOfflineQueue(); });
+          window.addEventListener('offline', () => { this.online = false; });
+
+          const stored = localStorage.getItem('dyms_offline_queue');
+          if (stored) this.offlineQueue = JSON.parse(stored);
+
+          const params = new URLSearchParams(window.location.search);
+          this.tokenParam = params.get('token');
+
+          if (this.tokenParam) {
+            this.showSafetyNotice = true;
+          } else {
+            this.showSafetyNotice = true;
+          }
+        },
+
+        acknowledgeSafety() {
+          this.safetyAcked = true;
+          this.showSafetyNotice = false;
+          if (this.tokenParam) {
+            this.loadByToken();
+          }
+        },
+
+        async loadByToken() {
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const res = await fetch(`/api/checkin/token/${this.tokenParam}`);
+            if (!res.ok) throw new Error('Token 无效或已过期');
+            this.appointment = await res.json();
+            this.containerNumber = this.appointment.container_number || '';
+            this.step = 'info';
+          } catch (e) {
+            this.errorMsg = e.message;
+            this.step = 'entry';
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async lookupContainer() {
+          if (!this.containerNumber) return;
+          this.loading = true;
+          this.errorMsg = '';
+          try {
+            const res = await fetch(`/api/checkin/lookup?container_number=${encodeURIComponent(this.containerNumber.trim().toUpperCase())}`);
+            if (!res.ok) throw new Error('未找到该柜号的预约 Container not found');
+            this.appointment = await res.json();
+            this.step = 'info';
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        handlePhoto(event, type) {
+          const file = event.target.files[0];
+          if (!file) return;
+          this.photoFiles[type] = file;
+          const reader = new FileReader();
+          reader.onload = (e) => { this.photos[type] = e.target.result; };
+          reader.readAsDataURL(file);
+        },
+
+        handleExceptionPhoto(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+          this.exception.photoFile = file;
+          const reader = new FileReader();
+          reader.onload = (e) => { this.exception.photo = e.target.result; };
+          reader.readAsDataURL(file);
+        },
+
+        async confirmCheckin() {
+          if (!this.photos.TRUCK_REAR || !this.photos.SEAL_PHOTO) return;
+          this.loading = true;
+          this.errorMsg = '';
+
+          if (!this.online) {
+            this.offlineQueue.push({
+              type: 'checkin',
+              appointment_id: this.appointment.id,
+              container_number: this.appointment.container_number,
+              photos: { ...this.photos },
+              timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('dyms_offline_queue', JSON.stringify(this.offlineQueue));
+            this.step = 'done';
+            this.successMsg = '已保存到离线队列，恢复网络后将自动同步';
+            this.loading = false;
+            return;
+          }
+
+          try {
+            const formData = new FormData();
+            formData.append('appointment_id', this.appointment.id);
+            if (this.photoFiles.TRUCK_REAR) formData.append('truck_rear', this.photoFiles.TRUCK_REAR);
+            if (this.photoFiles.SEAL_PHOTO) formData.append('seal_photo', this.photoFiles.SEAL_PHOTO);
+
+            const res = await fetch('/api/checkin/confirm', { method: 'POST', body: formData });
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.detail || '签到失败');
+            }
+            const result = await res.json();
+            if (result.dock_code) this.appointment.dock_code = result.dock_code;
+            this.step = 'done';
+            this.successMsg = '签到成功！';
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async submitException() {
+          if (!this.exception.type || !this.exception.photo) return;
+          this.loading = true;
+          this.errorMsg = '';
+
+          if (!this.online) {
+            this.offlineQueue.push({
+              type: 'exception',
+              appointment_id: this.appointment.id,
+              exception_type: this.exception.type,
+              description: this.exception.description,
+              photo: this.exception.photo,
+              timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('dyms_offline_queue', JSON.stringify(this.offlineQueue));
+            this.successMsg = '异常报告已保存到离线队列';
+            this.step = this.appointment.id ? 'info' : 'entry';
+            this.loading = false;
+            return;
+          }
+
+          try {
+            const formData = new FormData();
+            if (this.appointment.id) formData.append('appointment_id', this.appointment.id);
+            formData.append('exception_type', this.exception.type);
+            formData.append('description', this.exception.description);
+            if (this.exception.photoFile) formData.append('photo', this.exception.photoFile);
+
+            const res = await fetch('/api/checkin/exception', { method: 'POST', body: formData });
+            if (!res.ok) throw new Error('提交失败');
+            this.successMsg = '异常报告已提交';
+            this.exception = { type: '', description: '', photo: null, photoFile: null };
+            this.step = this.appointment.id ? 'info' : 'entry';
+          } catch (e) {
+            this.errorMsg = e.message;
+          } finally {
+            this.loading = false;
+          }
+        },
+
+        async syncOfflineQueue() {
+          if (!this.online || this.offlineQueue.length === 0) return;
+          const queue = [...this.offlineQueue];
+          for (let i = queue.length - 1; i >= 0; i--) {
+            const item = queue[i];
+            try {
+              if (item.type === 'checkin') {
+                const formData = new FormData();
+                formData.append('appointment_id', item.appointment_id);
+                // Convert base64 photos back to blobs
+                for (const key of ['TRUCK_REAR', 'SEAL_PHOTO']) {
+                  if (item.photos[key]) {
+                    const blob = await (await fetch(item.photos[key])).blob();
+                    formData.append(key.toLowerCase(), blob, `${key}.jpg`);
+                  }
+                }
+                await fetch('/api/checkin/confirm', { method: 'POST', body: formData });
+              } else if (item.type === 'exception') {
+                const formData = new FormData();
+                if (item.appointment_id) formData.append('appointment_id', item.appointment_id);
+                formData.append('exception_type', item.exception_type);
+                formData.append('description', item.description);
+                if (item.photo) {
+                  const blob = await (await fetch(item.photo)).blob();
+                  formData.append('photo', blob, 'exception.jpg');
+                }
+                await fetch('/api/checkin/exception', { method: 'POST', body: formData });
+              }
+              this.offlineQueue.splice(i, 1);
+            } catch (e) {
+              console.error('Sync failed for item', i, e);
+            }
+          }
+          localStorage.setItem('dyms_offline_queue', JSON.stringify(this.offlineQueue));
+          if (this.offlineQueue.length === 0) {
+            this.successMsg = '所有离线数据已同步';
+          }
+        },
+
+        formatTime(t) {
+          if (!t) return '-';
+          return new Date(t).toLocaleString('zh-CN', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        },
+
+        statusClass(s) {
+          const map = {
+            SCHEDULED: 'bg-blue-100 text-blue-800',
+            CHECKED_IN: 'bg-green-100 text-green-800',
+            DOCK_ASSIGNED: 'bg-purple-100 text-purple-800',
+            UNLOADING: 'bg-yellow-100 text-yellow-800',
+            COMPLETED: 'bg-gray-100 text-gray-800',
+            CANCELLED: 'bg-red-100 text-red-800'
+          };
+          return map[s] || 'bg-gray-100 text-gray-800';
+        }
+      };
+    }
+  </script>
+</body>
+</html>

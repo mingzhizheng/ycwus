@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DYMS - 仓库PDA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.0/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen" x-data="pdaApp()">
+
+<!-- Login Screen -->
+<template x-if="!token">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
+      <h1 class="text-2xl font-bold text-center mb-6">仓库PDA</h1>
+      <input x-model="loginForm.username" type="text" placeholder="用户名"
+        class="w-full border rounded-xl px-4 py-3 mb-3 text-lg">
+      <input x-model="loginForm.password" type="password" placeholder="密码"
+        class="w-full border rounded-xl px-4 py-3 mb-4 text-lg">
+      <button @click="login()" class="w-full bg-indigo-600 text-white rounded-xl py-3 text-lg font-semibold">
+        登录
+      </button>
+      <p x-show="loginError" class="text-red-500 text-center mt-3 text-sm" x-text="loginError"></p>
+    </div>
+  </div>
+</template>
+
+<!-- Main PDA Interface -->
+<template x-if="token">
+  <div>
+    <!-- Header -->
+    <div class="bg-indigo-900 text-white px-4 py-3 flex justify-between items-center sticky top-0 z-50">
+      <h1 class="text-lg font-bold">PDA</h1>
+      <div class="flex gap-2">
+        <button @click="activeView='tasks'" :class="activeView==='tasks'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">任务</button>
+        <button @click="activeView='yard'" :class="activeView==='yard'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">车场</button>
+        <button @click="activeView='walk'" :class="activeView==='walk'?'bg-white/20':''" class="px-3 py-1 rounded text-sm">盘点</button>
+        <button @click="logout()" class="px-3 py-1 bg-red-500/30 rounded text-sm">退出</button>
+      </div>
+    </div>
+
+    <!-- Tasks View -->
+    <div x-show="activeView==='tasks'" class="p-4 space-y-3">
+      <div class="flex justify-between items-center mb-2">
+        <h2 class="text-lg font-bold">今日任务</h2>
+        <button @click="fetchTasks()" class="text-indigo-600 text-sm">刷新</button>
+      </div>
+
+      <template x-for="appt in tasks" :key="appt.id">
+        <div class="bg-white rounded-xl p-4 shadow-sm border-l-4"
+          :class="{
+            'border-green-500': appt.status==='CHECKED_IN',
+            'border-indigo-500': appt.status==='DOCK_ASSIGNED',
+            'border-orange-500': appt.status==='UNLOADING',
+            'border-teal-500': appt.status==='UNLOAD_COMPLETE',
+            'border-gray-300': !['CHECKED_IN','DOCK_ASSIGNED','UNLOADING','UNLOAD_COMPLETE'].includes(appt.status)
+          }">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <span class="font-mono font-bold text-lg" x-text="appt.dock_code || '待分配'"></span>
+              <span class="ml-2 px-2 py-0.5 rounded text-xs font-medium"
+                :class="{
+                  'bg-green-100 text-green-800': appt.status==='CHECKED_IN',
+                  'bg-indigo-100 text-indigo-800': appt.status==='DOCK_ASSIGNED',
+                  'bg-orange-100 text-orange-800': appt.status==='UNLOADING',
+                  'bg-teal-100 text-teal-800': appt.status==='UNLOAD_COMPLETE'
+                }" x-text="appt.status"></span>
+            </div>
+            <span class="text-sm text-gray-500" x-text="'#'+appt.id"></span>
+          </div>
+          <div class="text-sm text-gray-600 mb-3">
+            <span x-text="appt.shipper_name"></span> |
+            <span x-text="appt.truck_plate || 'N/A'"></span> |
+            <span x-text="appt.appointment_type"></span>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex gap-2 flex-wrap">
+            <template x-if="appt.status==='DOCK_ASSIGNED'">
+              <button @click="transitionStatus(appt.id, 'UNLOADING')"
+                class="flex-1 bg-orange-500 text-white rounded-xl py-3 text-base font-semibold">
+                开始卸货
+              </button>
+            </template>
+
+            <template x-if="appt.status==='UNLOADING'">
+              <div class="w-full space-y-2">
+                <div class="flex gap-2">
+                  <label class="flex-1 bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-3 text-center cursor-pointer">
+                    <input type="file" accept="image/*" capture="environment" class="hidden"
+                      @change="uploadPhoto($event, appt.id, 'DOOR_OPEN')">
+                    <div class="text-blue-600 font-semibold">开门照</div>
+                  </label>
+                  <label class="flex-1 bg-teal-50 border-2 border-dashed border-teal-300 rounded-xl p-3 text-center cursor-pointer">
+                    <input type="file" accept="image/*" capture="environment" class="hidden"
+                      @change="uploadPhoto($event, appt.id, 'CLEAR_OUT')">
+                    <div class="text-teal-600 font-semibold">清场照</div>
+                  </label>
+                </div>
+                <button @click="transitionStatus(appt.id, 'UNLOAD_COMPLETE')"
+                  class="w-full bg-teal-600 text-white rounded-xl py-3 text-base font-semibold">
+                  卸货完成 / 报空
+                </button>
+              </div>
+            </template>
+
+            <template x-if="appt.status==='UNLOAD_COMPLETE'">
+              <button @click="yardMove(appt.id)"
+                class="flex-1 bg-purple-600 text-white rounded-xl py-3 text-base font-semibold">
+                移柜至临时车位
+              </button>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <div x-show="tasks.length===0" class="text-center text-gray-400 py-12">暂无任务</div>
+    </div>
+
+    <!-- Yard Inventory View -->
+    <div x-show="activeView==='yard'" class="p-4">
+      <h2 class="text-lg font-bold mb-3">车场在库</h2>
+      <button @click="fetchYard()" class="text-indigo-600 text-sm mb-3">刷新</button>
+
+      <div class="grid grid-cols-2 gap-3">
+        <template x-for="item in yardItems" :key="item.id">
+          <div class="bg-white rounded-xl p-3 shadow-sm">
+            <div class="font-mono font-bold" x-text="item.yard_code || 'N/A'"></div>
+            <div class="text-sm text-gray-600" x-text="item.shipper_name"></div>
+            <div class="text-xs text-gray-400" x-text="item.truck_plate"></div>
+            <span class="px-2 py-0.5 rounded text-xs mt-1 inline-block"
+              :class="{'bg-purple-100 text-purple-800': item.status==='YARD_MOVED', 'bg-teal-100 text-teal-800': item.status!=='YARD_MOVED'}"
+              x-text="item.status"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Yard Walk View -->
+    <div x-show="activeView==='walk'" class="p-4">
+      <h2 class="text-lg font-bold mb-3">车场盘点</h2>
+      <p class="text-sm text-gray-500 mb-4">扫描或输入柜号核对在库状态</p>
+      <input x-model="walkInput" type="text" placeholder="输入柜号或车牌号"
+        class="w-full border-2 rounded-xl px-4 py-3 text-lg mb-3"
+        @keyup.enter="verifyYardItem()">
+      <button @click="verifyYardItem()" class="w-full bg-indigo-600 text-white rounded-xl py-3 text-lg font-semibold">
+        核对
+      </button>
+      <div x-show="walkResult" class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+        <pre class="text-sm" x-text="JSON.stringify(walkResult, null, 2)"></pre>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+function pdaApp() {
+  return {
+    token: localStorage.getItem('dyms_token'),
+    loginForm: { username: '', password: '' },
+    loginError: '',
+    activeView: 'tasks',
+    tasks: [],
+    yardItems: [],
+    walkInput: '',
+    walkResult: null,
+
+    async login() {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.loginForm),
+        });
+        const data = await res.json();
+        if (!res.ok) { this.loginError = data.detail || 'Login failed'; return; }
+        this.token = data.access_token;
+        localStorage.setItem('dyms_token', data.access_token);
+        this.fetchTasks();
+      } catch (e) { this.loginError = 'Network error'; }
+    },
+
+    logout() {
+      this.token = null;
+      localStorage.removeItem('dyms_token');
+    },
+
+    headers() {
+      return { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' };
+    },
+
+    async fetchTasks() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const res = await fetch(`/api/appointments?facility_id=1&date=${today}&page_size=50`, { headers: this.headers() });
+        const data = await res.json();
+        this.tasks = (data.data || []).filter(a =>
+          ['CHECKED_IN', 'DOCK_ASSIGNED', 'UNLOADING', 'UNLOAD_COMPLETE'].includes(a.status)
+        );
+      } catch (e) { console.error(e); }
+    },
+
+    async fetchYard() {
+      try {
+        const res = await fetch('/api/dock/yard/inventory?facility_id=1', { headers: this.headers() });
+        const data = await res.json();
+        this.yardItems = data.data || [];
+      } catch (e) { console.error(e); }
+    },
+
+    async transitionStatus(apptId, toStatus) {
+      await fetch(`/api/appointments/${apptId}/status`, {
+        method: 'PATCH',
+        headers: this.headers(),
+        body: JSON.stringify({ to_status: toStatus }),
+      });
+      this.fetchTasks();
+    },
+
+    async yardMove(apptId) {
+      await fetch('/api/dock/yard-move', {
+        method: 'POST',
+        headers: this.headers(),
+        body: JSON.stringify({ appointment_id: apptId }),
+      });
+      this.fetchTasks();
+    },
+
+    async uploadPhoto(event, apptId, photoType) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('appointment_id', apptId);
+      formData.append('photo_type', photoType);
+      await fetch('/api/evidence/upload', { method: 'POST', body: formData });
+    },
+
+    async verifyYardItem() {
+      if (!this.walkInput.trim()) return;
+      // Search appointments by truck plate
+      const res = await fetch(`/api/appointments?page_size=5`, { headers: this.headers() });
+      const data = await res.json();
+      const match = (data.data || []).find(a =>
+        a.truck_plate && a.truck_plate.toLowerCase().includes(this.walkInput.toLowerCase())
+      );
+      this.walkResult = match || { message: 'Not found in system' };
+    },
+
+    init() {
+      if (this.token) {
+        this.fetchTasks();
+        this.fetchYard();
+      }
+    }
+  };
+}
+</script>
+</body>
+</html>
