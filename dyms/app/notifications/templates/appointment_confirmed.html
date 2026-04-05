@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #2e7d32;">Appointment Confirmed</h2>
+  <p>Your dock appointment has been confirmed:</p>
+  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Appointment ID</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">#{{ appt.id }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Scheduled Start</td><td style="padding: 8px; border-bottom: 1px solid #eee;">{{ appt.scheduled_start }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Type</td><td style="padding: 8px; border-bottom: 1px solid #eee;">{{ appt.appointment_type }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Truck Plate</td><td style="padding: 8px; border-bottom: 1px solid #eee;">{{ appt.truck_plate or 'TBD' }}</td></tr>
+  </table>
+  <p style="color: #666; font-size: 13px;">Please ensure your driver arrives on time. Late arrivals beyond 30 minutes will result in appointment cancellation and a $50 no-show fee.</p>
+  <p style="color: #999; font-size: 12px;">— DYMS Dock & Yard Management System</p>
+</body>
+</html>

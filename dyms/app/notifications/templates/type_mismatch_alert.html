@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #e65100;">Cargo Type Mismatch</h2>
+  <p>A cargo type mismatch has been detected for appointment <strong>#{{ appt.id }}</strong>.</p>
+  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Declared Type</td><td style="padding: 8px; border-bottom: 1px solid #eee;">{{ declared_type }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Actual Type</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; color: #e65100;">{{ actual_type }}</td></tr>
+  </table>
+  <p>Additional overtime charges may apply based on the actual cargo type.</p>
+  <p style="color: #999; font-size: 12px;">— DYMS Dock & Yard Management System</p>
+</body>
+</html>

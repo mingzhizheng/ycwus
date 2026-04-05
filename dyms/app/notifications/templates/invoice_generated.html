@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #1565c0;">Invoice Generated</h2>
+  <p>A new invoice has been generated for your account.</p>
+  <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Invoice Number</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold;">{{ invoice.invoice_number }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Period</td><td style="padding: 8px; border-bottom: 1px solid #eee;">{{ invoice.period_start }} — {{ invoice.period_end }}</td></tr>
+    <tr><td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Total Amount</td><td style="padding: 8px; border-bottom: 1px solid #eee; font-weight: bold; font-size: 18px;">${{ "%.2f"|format(invoice.total_amount) }}</td></tr>
+  </table>
+  <p style="color: #999; font-size: 12px;">— DYMS Dock & Yard Management System</p>
+</body>
+</html>

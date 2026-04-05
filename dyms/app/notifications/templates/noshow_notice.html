@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #c62828;">No-Show Notice</h2>
+  <p>Appointment <strong>#{{ appt.id }}</strong> has been marked as <strong>No-Show</strong>.</p>
+  <p>The driver did not arrive within the allowed tolerance window after the scheduled time.</p>
+  <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; margin: 16px 0;">
+    <strong>Penalty: ${{ "%.2f"|format(penalty_amount) }}</strong>
+    <p style="margin: 4px 0 0; font-size: 13px; color: #666;">This charge has been added to your account.</p>
+  </div>
+  <p style="color: #999; font-size: 12px;">— DYMS Dock & Yard Management System</p>
+</body>
+</html>
