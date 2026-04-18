@@ -4,3 +4,4 @@ wms.db-shm
 wms.db-wal
 public/uploads/*
 !public/uploads/.gitkeep
+.claude/
