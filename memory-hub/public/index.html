@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Hub</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #2f6f5e; --accent-soft: #e3efe9; --danger: #b3403a; --flash: #fff6d6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151614; --panel: #1e201d; --text: #ecece7; --muted: #9a9a92; --line: #30322e;
+      --accent: #7cc4ab; --accent-soft: #23332d; --danger: #e0766f; --flash: #3a3420;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+  h1 { font-size: 17px; margin: 0; }
+  .live { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.on { background: var(--accent); }
+  main { max-width: 980px; margin: 0 auto; padding: 16px; display: grid; gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  input, select, textarea, button { font: inherit; color: inherit; background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+  input, textarea { min-width: 0; }
+  textarea { width: 100%; resize: vertical; min-height: 60px; }
+  button { cursor: pointer; background: var(--accent); color: var(--panel); border-color: var(--accent); }
+  button.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  .grow { flex: 1 1 200px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); }
+  .pill { background: var(--accent-soft); color: var(--text); border-radius: 999px; padding: 2px 9px; font-size: 12px; cursor: pointer; border: none; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.obs { border-top: 1px solid var(--line); padding: 11px 2px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+  li.obs:first-child { border-top: none; }
+  li.flash { animation: flash 2.5s ease-out; }
+  @keyframes flash { from { background: var(--flash); } to { background: transparent; } }
+  .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; }
+  .content { white-space: pre-wrap; word-break: break-word; }
+  a { color: var(--accent); }
+  .x { background: none; border: none; color: var(--danger); padding: 2px 6px; align-self: start; }
+  .empty { color: var(--muted); padding: 20px 0; text-align: center; }
+  details summary { cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Memory Hub · Obsidian 共享记忆 <small id="vaultName" class="meta"></small></h1>
+  <span class="live"><span id="dot" class="dot"></span><span id="liveText">未连接</span></span>
+</header>
+<main>
+  <section class="card">
+    <div class="row">
+      <input id="q" class="grow" placeholder="搜索记忆（中文 / English，空格分隔）">
+      <select id="fScope"><option value="all">记忆 + 笔记</option><option value="memory">仅 AI 记忆</option><option value="notes">仅我的笔记</option></select>
+      <select id="fEntity"><option value="">全部实体</option></select>
+      <select id="fSource"><option value="">全部来源</option></select>
+      <button id="btnSearch">搜索</button>
+    </div>
+    <div class="stats" id="stats" style="margin-top:10px"></div>
+  </section>
+
+  <details class="card">
+    <summary>手动添加记忆</summary>
+    <div style="display:grid;gap:8px;margin-top:10px">
+      <textarea id="nContent" placeholder="一条独立、完整的事实，例如：用户偏好用中文回复"></textarea>
+      <div class="row">
+        <input id="nEntity" class="grow" placeholder="实体，例如 user / project:rpwms">
+        <select id="nType"></select>
+        <input id="nTags" class="grow" placeholder="标签，逗号分隔">
+        <select id="nImp"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+        <button id="btnAdd">保存</button>
+      </div>
+    </div>
+  </details>
+
+  <section class="card">
+    <ul id="list"></ul>
+  </section>
+
+  <section class="card row" style="justify-content:space-between;align-items:center">
+    <span class="meta">所有记忆都是 Obsidian 仓库里的 Markdown 笔记，备份 / 同步仓库即可。</span>
+    <button class="ghost" id="btnKey">API Key</button>
+  </section>
+</main>
+<script>
+const TYPES = ['fact','preference','event','decision','task','note','observation'];
+const $ = (id) => document.getElementById(id);
+let key = '';
+try { key = localStorage.getItem('memoryHubKey') || ''; } catch {}
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, { ...opts, headers: { 'Content-Type': 'application/json', 'X-Memory-Source': 'web', ...(key ? { Authorization: 'Bearer ' + key } : {}), ...(opts.headers || {}) } });
+  if (res.status === 401) { askKey(); throw new Error('unauthorized'); }
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || res.statusText);
+  return res.headers.get('content-type')?.includes('json') ? res.json() : res.text();
+}
+function askKey() {
+  const k = prompt('请输入 MEMORY_API_KEY', key);
+  if (k == null) return;
+  key = k.trim();
+  try { localStorage.setItem('memoryHubKey', key); } catch {}
+  refresh(); connect();
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+function render(items, flashId) {
+  const list = $('list');
+  if (!items.length) { list.innerHTML = '<li class="empty">没有结果。让任意 AI 调用 remember，或在上面手动添加。</li>'; return; }
+  list.innerHTML = items.map((o) => `
+    <li class="obs${o.id === flashId ? ' flash' : ''}">
+      <div class="content">${o.kind === 'memory' ? esc(o.content) : `<b>${esc(o.title)}</b>\n${esc(o.content ?? o.snippet)}`}</div>
+      ${o.kind === 'memory' ? `<button class="x" title="删除（移到 .trash）" data-del="${esc(o.id)}">✕</button>` : '<span></span>'}
+      <div class="meta">
+        ${o.kind === 'memory'
+          ? `<button class="pill" data-entity="${esc(o.entity)}">${esc(o.entity)}</button>
+             <span>${esc(o.type)}</span><span>★${o.importance}</span><span>来自 ${esc(o.source)}</span>`
+          : '<span class="pill">笔记</span>'}
+        <span>${new Date(o.updated_at).toLocaleString()}</span>
+        ${o.tags.map((t) => `<span>#${esc(t)}</span>`).join(' ')}
+        <a href="${esc(o.obsidian_url)}" title="${esc(o.path)}">在 Obsidian 中打开</a>
+      </div>
+    </li>`).join('');
+}
+
+async function refresh(flashId) {
+  const p = new URLSearchParams({ limit: 100, scope: $('fScope').value });
+  if ($('q').value.trim()) p.set('query', $('q').value.trim());
+  if ($('fEntity').value) p.set('entity', $('fEntity').value);
+  if ($('fSource').value) p.set('source', $('fSource').value);
+  const [{ items }, stats, ents] = await Promise.all([api('/api/search?' + p), api('/api/stats'), api('/api/entities')]);
+  render(items, flashId);
+  $('vaultName').textContent = '仓库：' + stats.vault;
+  $('stats').innerHTML = `<span>${stats.memories} 条 AI 记忆</span><span>${stats.notes} 篇笔记</span><span>${stats.entities} 个实体</span>` +
+    stats.by_source.map((s) => `<span>${esc(s.source)}: ${s.count}</span>`).join('');
+  fillSelect($('fEntity'), ents.items.map((e) => e.entity), '全部实体');
+  fillSelect($('fSource'), stats.by_source.map((s) => s.source), '全部来源');
+}
+function fillSelect(sel, values, label) {
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${label}</option>` + values.map((v) => `<option>${esc(v)}</option>`).join('');
+  sel.value = values.includes(cur) ? cur : '';
+}
+
+let es;
+function connect() {
+  if (es) es.close();
+  es = new EventSource('/api/events' + (key ? '?key=' + encodeURIComponent(key) : ''));
+  es.onopen = () => { $('dot').classList.add('on'); $('liveText').textContent = '实时观察中'; };
+  es.onerror = () => { $('dot').classList.remove('on'); $('liveText').textContent = '重连中…'; };
+  es.addEventListener('change', (e) => {
+    const evt = JSON.parse(e.data);
+    const who = evt.external ? 'Obsidian' : evt.note.source;
+    $('liveText').textContent = `${who} ${({ add: '新增', update: '修改', delete: '删除', touch: '刷新' })[evt.action]}：${evt.note.title}`;
+    refresh(evt.action === 'delete' ? null : evt.note.id).catch(() => {});
+  });
+}
+
+$('nType').innerHTML = TYPES.map((t) => `<option ${t === 'fact' ? 'selected' : ''}>${t}</option>`).join('');
+$('btnSearch').onclick = () => refresh();
+$('q').onkeydown = (e) => { if (e.key === 'Enter') refresh(); };
+$('fScope').onchange = $('fEntity').onchange = $('fSource').onchange = () => refresh();
+$('btnKey').onclick = askKey;
+$('btnAdd').onclick = async () => {
+  if (!$('nContent').value.trim()) return;
+  await api('/api/memories', { method: 'POST', body: JSON.stringify({
+    content: $('nContent').value, entity: $('nEntity').value, type: $('nType').value,
+    tags: $('nTags').value, importance: Number($('nImp').value), source: 'web' }) });
+  $('nContent').value = '';
+};
+$('list').onclick = async (e) => {
+  const del = e.target.dataset.del, ent = e.target.dataset.entity;
+  if (del && confirm('删除这条记忆？（笔记会移到仓库的 .trash 文件夹）')) await api('/api/memories?id=' + encodeURIComponent(del), { method: 'DELETE' });
+  if (ent) { $('fEntity').value = ent; $('fScope').value = 'memory'; refresh(); }
+};
+
+refresh().catch(() => {});
+connect();
+</script>
+</body>
+</html>
