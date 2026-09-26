@@ -8,7 +8,7 @@
 - **一套服务同时接入多种客户端**：
   - MCP：Claude Desktop、Claude Code、claude.ai、Cursor、ChatGPT 连接器
   - REST / OpenAPI：ChatGPT 自定义 GPT 的 Actions、脚本、n8n 等
-- **零依赖**：只需要 Node.js ≥ 22.5（内置 `node:sqlite`），不用 `npm install`。
+- **零依赖**：只需要 Node.js ≥ 22.13（内置 `node:sqlite`），不用 `npm install`。
 - **网页观察台**：打开 `http://localhost:8787/` 可以实时看到哪个 AI 写了什么，也能在这里搜索、添加、删除，或一键跳到 Obsidian。
 
 ```
@@ -20,7 +20,32 @@
                                   Obsidian（同一个文件夹，双向同步）
 ```
 
-## 1. 启动
+## 0. Windows 一键安装（推荐）
+
+1. 安装 [Node.js](https://nodejs.org) LTS（≥ 22.13；没装的话安装向导也可以用 winget 帮你装）。
+2. 把 `memory-hub` 文件夹放到一个固定位置，例如 `D:\memory-hub`。
+3. 双击 **`windows\setup.bat`**，按提示操作：
+   - 选择 Obsidian 仓库文件夹（可以直接粘贴路径，也可以在弹出的窗口里选）；
+   - 是否开放给**同一 Wi-Fi / 局域网**里的设备：选"是"会自动生成访问密钥，并添加防火墙规则（弹出一次管理员确认，只对"专用/域网络"生效）；
+   - 是否**开机自启**：选"是"后登录 Windows 时会自动在后台运行，崩溃后也会自动重启；
+   - 是否写入**本机 Claude Desktop** 配置：会先备份原文件，已有的其他 MCP 配置都会保留。
+4. 安装完成后会显示所有连接方式（本机、局域网地址、密钥、其他电脑的 Claude Desktop / Claude Code 配置），同时保存到 `windows\connect-info.txt`，方便复制。
+
+| 脚本 | 作用 |
+|---|---|
+| `setup.bat` | 安装 / 修改配置（可以重复运行） |
+| `start.bat` | 在前台运行，窗口里能看到日志（排查问题时用） |
+| `stop.bat` | 停止后台服务 |
+| `status.bat` | 查看运行状态、局域网地址和连接配置 |
+| `uninstall.bat` | 停止服务、取消开机自启、删除防火墙规则（不会动你的仓库和记忆） |
+
+局域网使用须知：
+- 其他电脑、手机、平板只要和主机连在同一个 Wi-Fi，就能用浏览器打开观察台，或者让它们的 Claude Desktop / Claude Code 连到主机。
+- **ChatGPT 和 claude.ai 网页版、手机 App 用不了局域网地址**：它们的请求是从云端发出的，访问不到你家里的内网。要接这些客户端，请看第 2 节。
+- 局域网内走的是 HTTP，只在自己家里、公司这类可信 Wi-Fi 上使用。建议在路由器里给主机设置固定 IP（DHCP 保留），不然 IP 变了其他设备会连不上。
+- 日志在 `windows\logs\` 里；配置文件是 `windows\config.json`，里面有密钥，不要分享。
+
+## 1. 启动（命令行 / macOS / Linux）
 
 ```bash
 cd memory-hub
