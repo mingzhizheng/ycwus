@@ -1,0 +1,19 @@
+{
+  "name": "memory-hub",
+  "version": "1.0.0",
+  "description": "Self-hosted long-term memory shared by ChatGPT, Claude, Cursor and any other AI tool (MCP + REST/OpenAPI)",
+  "license": "MIT",
+  "private": true,
+  "bin": {
+    "memory-hub": "bin/server.js",
+    "memory-hub-mcp": "bin/mcp-stdio.js"
+  },
+  "scripts": {
+    "start": "node bin/server.js",
+    "mcp": "node bin/mcp-stdio.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
